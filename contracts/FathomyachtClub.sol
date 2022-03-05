@@ -16,7 +16,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   uint256 private _yachtCount = 0;
   uint256 private _prestigeCount = 0;
 
-  // mapping for token to tier number(1: power, 2: yacht, 3: prestige)
+  // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
   mapping(uint256 => uint8) private _tokenToTier;
 
   // array for token URIs(0: power, 1: yacht, 2: prestige)
@@ -77,7 +77,11 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     }
   }
 
-  function getTierPrice(uint8 tierNumber) external view returns(uint256) {
+  function getTierNumberOf(uint256 _tokenId) public view returns(uint8) {
+    return _tokenToTier[_tokenId];
+  }
+
+  function getTierPrice(uint8 tierNumber) public view returns(uint256) {
     require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array");
     return NFT_PRICE[tierNumber];
   }
