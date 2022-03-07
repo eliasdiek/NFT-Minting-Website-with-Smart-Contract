@@ -19,13 +19,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
   mapping(uint256 => uint8) private _tokenToTier;
 
-  // array for token URIs(0: power, 1: yacht, 2: prestige)
-  string[] private _batchTokenURI = [
-    "https://gateway.pinata.cloud/ipfs/Qmd65WNW1B8Z3UCG5AvNUYo1vP2yXBwboJVKB57LR2Ww9t",
-    "https://gateway.pinata.cloud/ipfs/QmP3mVHt5GgiUQt1xA9Yho5CjWPtBqqWuHw4VGQJeBVpe7",
-    "https://gateway.pinata.cloud/ipfs/QmXn2VsBujETLvCKdy7kHzEVevQ6cBrp6Nc9WgMd9ggQKr"
-  ];
-
   // mapping for tier to price(0: power, 1: yacht, 2: prestige)
   uint256[] private NFT_PRICE = [0, 0, 0];
   uint256[] private PRESALE_TIER_MINT_LIMIT = [100, 100, 50];
@@ -39,12 +32,13 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   // Mapping from address to white list flag(1: added, 0: removed)
   mapping(address => uint8) private _whitelister;
 
-  constructor() ERC721("Fathom Yacht Club", "FYC") {}
+  constructor() ERC721("Fathom Yacht Club", "FYC") {
+    _setDefaultRoyalty(msg.sender, 1000);
+  }
 
   modifier ableMintBatch(uint256 number, uint8 tierNumber) {
     uint8 blockStatus = checkBlock(msg.sender);
     require(blockStatus > 0, "Not available to mint.");
-    require(keccak256(abi.encodePacked(_batchTokenURI[tierNumber])) != keccak256(abi.encodePacked("")), "Batch Token URI not set");
     _;
   }
 
@@ -89,16 +83,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   function setTierPrice(uint256 price, uint8 tierNumber) external onlyOwner {
     require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
     NFT_PRICE[tierNumber] = price;
-  }
-
-  function getTokenBatchURI(uint8 tierNumber) external view returns(string memory) {
-    require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
-    return _batchTokenURI[tierNumber];
-  }
-
-  function setTokenBatchURI(string memory tokenURI, uint8 tierNumber) public onlyOwner {
-    require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
-    _batchTokenURI[tierNumber] = tokenURI;
   }
 
   function getMaxLimit() external view returns(uint256) {
@@ -172,7 +156,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       _tokenIds.increment();
       newItemId = _tokenIds.current();
       _mint(msg.sender, newItemId);
-      _setTokenURI(newItemId, _batchTokenURI[tierNumber]);
       _tokenToTier[newItemId] = tierNumber;
     }
 
@@ -195,7 +178,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     _resetTokenRoyalty(tokenId);
   }
 
-  function setRoality(address receiver, uint96 feeNumerator) external {
+  function setRoality(address receiver, uint96 feeNumerator) external onlyOwner {
     _setDefaultRoyalty(receiver, feeNumerator);
   }
 }

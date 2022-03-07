@@ -7,14 +7,14 @@ interface IFYC is IERC721 {
     function totalSupply() external view returns(uint256 number);
     function getTierNumberOf(uint256 _tokenId) external view returns(uint8 tierNumber);
     function getTierPrice(uint8 tierNumber) external view returns(uint256 tierPrice);
+    function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view returns (address roalityReceiver, uint256 royaltyAmount);
+    function setRoality(address receiver, uint96 feeNumerator) external;
 }
 
 contract Leasing is Ownable {
     event ApproveLeasing(uint tokenId);
 
     IFYC _nft;
-    address private _royaltyReceiver = address(0);
-    uint8 private _royaltyFee = 10;
     uint8 private _refundPercentFee = 98;
 
     struct LeaseOffer {
@@ -28,10 +28,6 @@ contract Leasing is Ownable {
     mapping (uint256 => bool) leasable;
     uint256 leasableTokenCount = 0;
     mapping (uint256 => uint256) leasePrices;
-
-    constructor() {
-        _royaltyReceiver = msg.sender;
-    }
     
     modifier onlyOwnerOf(uint256 _tokenId) {
         require(msg.sender == address(_nft.ownerOf(_tokenId)), "caller is not the owner of token");
@@ -52,21 +48,18 @@ contract Leasing is Ownable {
         require(success1, "Failed to Withdraw VET");
     }
 
-    function getRoyaltyFee() external view returns(uint8) {
-        return _royaltyFee;
+    function getRoalityInfo(uint256 _tokenId, uint256 _salePrice) public view returns(address, uint256) {
+        (address roalityReceiver, uint256 royaltyAmount) = _nft.royaltyInfo(_tokenId, _salePrice);
+
+        return (roalityReceiver, royaltyAmount);
     }
 
-    function setRoyaltyFee(uint8 fee) external onlyOwner {
-        require(fee > 0 && fee <100, "Invalied percentage value");
-        _royaltyFee = fee;
-    }
-
-    function getRoyaltyReceiver() external view returns(address) {
-        return _royaltyReceiver;
-    }
-
-    function setRoyaltyReceiver(address pm_address) external onlyOwner {
-        _royaltyReceiver = address(pm_address);
+    /**
+     * @dev The denominator with which to interpret the fee set in {_setTokenRoyalty} and {_setDefaultRoyalty} as a
+     * fraction of the sale price. Defaults to 10000 so fees are expressed in basis points.
+     */
+    function setRoality(address receiver, uint96 feeNumerator) external onlyOwner {
+        _nft.setRoality(receiver, feeNumerator);
     }
 
     function getRefundFee() external view returns(uint8) {
@@ -106,8 +99,9 @@ contract Leasing is Ownable {
 
         for(uint256 i = 0; i < tokenLeaseOffers.length; i++) {
             if(tokenLeaseOffers[i].from == _from) {
-                address payable royaltyReceiver = payable(_royaltyReceiver);
-                (bool success1, ) = royaltyReceiver.call{ value: tokenLeaseOffers[i].price * _royaltyFee / 100 }("");
+                (address royaltyReceiver, uint256 roaltyAmount) = getRoalityInfo(_tokenId, tokenLeaseOffers[i].price);
+                royaltyReceiver = payable(royaltyReceiver);
+                (bool success1, ) = royaltyReceiver.call{ value: roaltyAmount }("");
                 require(success1, "Failed to Pay Royalty fee");
                 _lease[_tokenId] = tokenLeaseOffers[i];
                 delete leaseOffers[_tokenId][i];
@@ -167,11 +161,11 @@ contract Leasing is Ownable {
         require(_nft.ownerOf(_tokenId) != msg.sender, "You can't buy yours.");
         require(leasable[_tokenId], "Token is not public");
         require(_nft.ownerOf(_tokenId) != address(0), "You can't send offer no-owner token");
-        require(_royaltyReceiver != address(0), "Royalty is not avaible");
         require(msg.value >= leasePrices[_tokenId], "Amount of ether sent not enough.");
 
-        address payable royaltyReceiver = payable(_royaltyReceiver);
-        (bool success1, ) = royaltyReceiver.call{ value: msg.value * _royaltyFee / 100 }("");
+        (address royaltyReceiver, uint256 roaltyAmount) = getRoalityInfo(_tokenId, msg.value);
+        royaltyReceiver = payable(royaltyReceiver);
+        (bool success1, ) = royaltyReceiver.call{ value: roaltyAmount }("");
         require(success1, "Failed to Pay Royalty fee");
 
         _lease[_tokenId] = LeaseOffer(msg.sender, msg.value, _expiresIn);
