@@ -100,8 +100,8 @@ contract Leasing is Ownable {
         for(uint256 i = 0; i < tokenLeaseOffers.length; i++) {
             if(tokenLeaseOffers[i].from == _from) {
                 (address royaltyReceiver, uint256 roaltyAmount) = getRoalityInfo(_tokenId, tokenLeaseOffers[i].price);
-                royaltyReceiver = payable(royaltyReceiver);
-                (bool success1, ) = royaltyReceiver.call{ value: roaltyAmount }("");
+                address payable _royaltyReceiver = payable(royaltyReceiver);
+                (bool success1, ) = _royaltyReceiver.call{ value: roaltyAmount }("");
                 require(success1, "Failed to Pay Royalty fee");
                 _lease[_tokenId] = tokenLeaseOffers[i];
                 delete leaseOffers[_tokenId][i];
@@ -164,8 +164,8 @@ contract Leasing is Ownable {
         require(msg.value >= leasePrices[_tokenId], "Amount of ether sent not enough.");
 
         (address royaltyReceiver, uint256 roaltyAmount) = getRoalityInfo(_tokenId, msg.value);
-        royaltyReceiver = payable(royaltyReceiver);
-        (bool success1, ) = royaltyReceiver.call{ value: roaltyAmount }("");
+        address payable _royaltyReceiver = payable(royaltyReceiver);
+        (bool success1, ) = _royaltyReceiver.call{ value: roaltyAmount }("");
         require(success1, "Failed to Pay Royalty fee");
 
         _lease[_tokenId] = LeaseOffer(msg.sender, msg.value, _expiresIn);
