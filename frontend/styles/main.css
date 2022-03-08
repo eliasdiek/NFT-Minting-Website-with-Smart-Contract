@@ -1,0 +1,16 @@
+footer {
+    background-color: #424242;
+}
+
+.yacht-section-1 {
+    background-image: url(/images/fathom-yachts.jpeg);
+    background-position: 50%;
+    background-size: cover;
+    min-height: 400px;
+}
+.yacht-section-2 {
+    background-image: url(/images/yacht-charters.jpeg);
+    background-position: 50%;
+    background-size: cover;
+    min-height: 400px;
+}
