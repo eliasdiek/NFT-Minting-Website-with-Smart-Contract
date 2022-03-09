@@ -137,7 +137,7 @@ export default function Locations() {
                             <div className="w-full sm:w-1/2 image-block">
                                 <Image src={`/images/${location.image}`} className="w-full h-full block" width={1000} height={565} />
                             </div>
-                            <div className="w-full sm:w-1/2 p-8">
+                            <div className="w-full sm:w-1/2 py-8 px-12">
                                 <h2 className="mb-2 font-muli text-3xxl font-semibold text-center text-copy-dark">{ location.name }</h2>
                                 <p className="font-light text-llg text-copy-secondary">{ location.description }</p>
                             </div>
@@ -146,7 +146,7 @@ export default function Locations() {
                 })
             }
 
-            <div className="container pt-16 pb-4 sm:pb-8" id={locations[locations.length - 1].name.toLocaleLowerCase()}>
+            <div className="container-lg pt-16 pb-4 sm:pb-8" id={locations[locations.length - 1].name.toLocaleLowerCase()}>
                 <h2 className="text-primary text-5xl font-light text-center py-4">{ locations[locations.length - 1].name }</h2>
                 <p className="font-light text-xl py-2 text-copy-secondary text-center">{ locations[locations.length - 1].description }</p>
 

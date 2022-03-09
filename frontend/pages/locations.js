@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Newsletter from '../components/sections/Newsletter';
 import Locations from '../components/sections/Locations';
 
-export default function About() {
+export default function Location() {
     return (
         <React.Fragment>
             <Head>

@@ -93,6 +93,24 @@ module.exports = {
             maxWidth: '72rem',
           },
         },
+        '.container-lg': {
+          width: '90%',
+          maxWidth: '90%',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          '@screen sm': {
+            maxWidth: '72rem',
+          },
+          '@screen md': {
+            maxWidth: '72rem',
+          },
+          '@screen lg': {
+            maxWidth: '80rem',
+          },
+          '@screen xl': {
+            maxWidth: '80rem',
+          },
+        },
         '.copy-shadow-sm': {
           textShadow: '0em 0.1em 0.1em rgb(0 0 0 / 40%)'
         },
