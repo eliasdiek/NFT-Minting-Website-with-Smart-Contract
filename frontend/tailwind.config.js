@@ -16,6 +16,7 @@ module.exports = {
           primary: '#001ed4',
           secondary: '#25efcb',
           light: '#f6f9fb',
+          lighter: '#fafbfc',
           overlay: 'rgba(0,19,84,0.3)'
         },
         copy: {

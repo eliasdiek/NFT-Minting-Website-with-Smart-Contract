@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Newsletter from '../components/sections/Newsletter';
 import Roadmap from '../components/sections/Roadmap';
 import Faqs from '../components/sections/Faqs';
+import Team from '../components/sections/Team';
 
 export default function About() {
     return (
@@ -51,6 +52,10 @@ export default function About() {
 
                 <section className="py-8">
                     <Faqs />
+                </section>
+
+                <section className="py-8 bg-background-lighter">
+                    <Team />
                 </section>
         
                 <section>
