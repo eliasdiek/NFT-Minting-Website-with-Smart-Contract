@@ -46,7 +46,7 @@ const footerMenu = [
 export default function Layout(props) {
     return (
         <React.Fragment>
-            <header className="w-full shadow-sm shadow-shadow sm:fixed top-0 bg-white z-10">
+            <header className="w-full shadow-sm shadow-shadow sm:fixed top-0 bg-white z-20">
                 <Header headerMenu={headerMenu} />
             </header>
             {props.children}

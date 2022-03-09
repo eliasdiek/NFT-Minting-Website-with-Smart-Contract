@@ -14,7 +14,7 @@ export default function Header({ headerMenu }) {
     }
 
     useEffect(() => {
-        console.log('[router]', router);
+        setOpenMenu(false);
         setMenu(headerMenu.map(menu => {
             if (menu.link === router.pathname) menu.active = true;
             else menu.active = false;
@@ -40,24 +40,24 @@ export default function Header({ headerMenu }) {
                 <div className="absolute right-0 z-20 h-full flex items-center sm:hidden">
                     <button onClick={() => toggleMenu()}>
                         <div className="space-y-1">
-                            <div className="w-6 h-0.5 bg-primary"></div>
-                            <div className="w-6 h-0.5 bg-primary"></div>
-                            <div className="w-6 h-0.5 bg-primary"></div>
+                            <div className="w-5 h-0.5 bg-primary"></div>
+                            <div className="w-5 h-0.5 bg-primary"></div>
+                            <div className="w-5 h-0.5 bg-primary"></div>
                         </div>
                     </button>
                 </div>
                 <Transition
-                    enter="transform transition ease-in-out duration-500 sm:duration-0"
-                    enterFrom="-translate-y-full"
-                    enterTo="translate-y-0"
-                    leave="transform transition ease-in-out duration-500 sm:duration-0"
-                    leaveFrom="translate-y-0"
-                    leaveTo="-translate-y-full"
+                    enter="transform transition transition-all sm:transition-none ease-in-out duration-700 sm:duration-0"
+                    enterFrom="max-h-0 overflow-hidden"
+                    enterTo="max-h-screen overflow-hidden"
+                    leave="transform transition transition-all sm:transition-none ease-out duration-700 sm:duration-0"
+                    leaveFrom="max-h-screen overflow-hidden"
+                    leaveTo="max-h-0 overflow-hidden"
                     show={openMenu}
                     as={Fragment}
                 >
-                    <div className='sm:block absolute sm:relative top-20 sm:top-0 px-4 pt-8 pb-4 z-10 sm:p-0 w-full sm:w-auto bg-white border-t-2 border-primary sm:border-none'>
-                        <ul className="block sm:flex items-center m-0 p-0 text-base font-bold mx-auto">
+                    <div className='sm:block absolute sm:relative top-20 sm:top-0 z-10 sm:p-0 w-full sm:w-auto shadow-md sm:shadow-none bg-white'>
+                        <ul className="block sm:flex items-center m-0 p-0 px-4 pt-8 sm:pt-0 pb-4 sm:pb-0 text-base font-bold mx-auto bg-white border-t-3 border-primary sm:border-none">
                             {
                                 menu.map(item => {
                                     return (

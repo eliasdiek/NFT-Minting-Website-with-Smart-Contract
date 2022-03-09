@@ -1,6 +1,5 @@
 import React from 'react';
 import Head from 'next/head';
-import Image from 'next/image';
 import Newsletter from '../components/sections/Newsletter';
 import Roadmap from '../components/sections/Roadmap';
 import Faqs from '../components/sections/Faqs';
@@ -59,5 +58,5 @@ export default function About() {
                 </section>
             </main>
         </React.Fragment>
-    )
-}
+    );
+};

@@ -15,7 +15,8 @@ module.exports = {
           dark: '#424242',
           primary: '#001ed4',
           secondary: '#25efcb',
-          light: '#f6f9fb'
+          light: '#f6f9fb',
+          overlay: 'rgba(0,19,84,0.3)'
         },
         copy: {
           primary: '#000000',
@@ -28,8 +29,13 @@ module.exports = {
       },
       fontSize: {
         '17px': '17px',
+        'llg': '19px',
         'xxl': '22px',
+        '3xxl': '2rem',
         '4xxl': '2.5rem'
+      },
+      borderWidth: {
+        '3': '3px'
       }
     },
     fontFamily: {
@@ -86,7 +92,10 @@ module.exports = {
           '@screen xl': {
             maxWidth: '72rem',
           },
-        }
+        },
+        '.copy-shadow-sm': {
+          textShadow: '0em 0.1em 0.1em rgb(0 0 0 / 40%)'
+        },
       })
     }
   ],

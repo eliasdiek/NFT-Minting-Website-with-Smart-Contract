@@ -46,3 +46,6 @@ footer {
     list-style-type: disc;
     margin-left: 20px;
 }
+.image-block span {
+    display: block !important;
+}
