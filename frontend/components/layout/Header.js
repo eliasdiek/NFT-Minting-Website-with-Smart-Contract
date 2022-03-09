@@ -17,8 +17,12 @@ export default function Header({ headerMenu }) {
     }
 
 	const handleClickAway = () => {
-        setShowMenu(true);
-		setOpenMenu(false);
+        const width = window.innerWidth;
+
+        if (width < 768) {
+            setShowMenu(true);
+            setOpenMenu(false);
+        }
 	};
 
     useEffect(() => {
@@ -34,7 +38,7 @@ export default function Header({ headerMenu }) {
         const width = window.innerWidth;
 
         if (width > 768) {
-            setOpenMenu(false);
+            setOpenMenu(true);
         }
     }, [router, headerMenu]);
 
