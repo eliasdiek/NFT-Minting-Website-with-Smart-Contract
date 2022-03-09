@@ -63,6 +63,20 @@ export default function Locations() {
         setOpenMenu(!openMenu);
     }
 
+    const scrollTo = (e, id) => {
+        e.preventDefault();
+
+        try {
+            const elem = document.getElementById(id);
+            const height = elem.offsetTop + 240;
+            console.log('[height]', height);
+            window.scrollTo(0, height);
+        }
+        catch(err) {
+            console.log(err);
+        }
+    };
+
     useEffect(() => {
         const width = window.innerWidth;
 
@@ -99,7 +113,7 @@ export default function Locations() {
                         locations.map(location => {
                             return (
                                 <li key={location.name} className="pr-6 px-4 py-2 border-b sm:border-none border-gray-100 text-sm sm:text-base">
-                                    <a href={`#${location.name.toLocaleLowerCase()}`} className="text-xl text-primary font-muli font-medium">{ location.name }</a>
+                                    <a href={`#${location.name.toLocaleLowerCase()}`} className="text-xl text-primary font-muli font-medium" onClick={e => scrollTo(e, location.name.toLocaleLowerCase())}>{ location.name }</a>
                                 </li>
                             )
                         })
@@ -111,7 +125,7 @@ export default function Locations() {
             {
                 locations.slice(0, locations.length - 1).map((location, index) => {
                     return (
-                        <div className={`flex flex-col ${ index % 2 == 1 ? 'sm:flex-row-reverse' : 'sm:flex-row' }`} id={`#${location.name.toLocaleLowerCase()}`} key={index}>
+                        <div className={`flex flex-col ${ index % 2 == 1 ? 'sm:flex-row-reverse' : 'sm:flex-row' }`} id={location.name.toLocaleLowerCase()} key={index}>
                             <div className="w-full sm:w-1/2 image-block">
                                 <Image src={`/images/${location.image}`} className="w-full h-full block" width={1000} height={565} />
                             </div>
@@ -124,7 +138,7 @@ export default function Locations() {
                 })
             }
 
-            <div className="container pt-16 pb-4 sm:pb-8">
+            <div className="container pt-16 pb-4 sm:pb-8" id={locations[locations.length - 1].name.toLocaleLowerCase()}>
                 <h2 className="text-primary text-5xl font-light text-center py-4">{ locations[locations.length - 1].name }</h2>
                 <p className="font-light text-xl py-2 text-copy-secondary text-center">{ locations[locations.length - 1].description }</p>
 
