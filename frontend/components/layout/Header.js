@@ -1,20 +1,29 @@
 import React, {Fragment, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import Router, { useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import { Transition } from '@headlessui/react';
+import ClickAwayListener from 'react-click-away-listener';
 
 export default function Header({ headerMenu }) {
     const [menu, setMenu] = useState(headerMenu);
+    const [showMenu, setShowMenu] = useState(true);
     const [openMenu, setOpenMenu] = useState(false);
     const router = useRouter();
 
     function toggleMenu() {
+        setShowMenu(true);
         setOpenMenu(!openMenu);
     }
 
+	const handleClickAway = () => {
+        setShowMenu(true);
+		setOpenMenu(false);
+	};
+
     useEffect(() => {
         setOpenMenu(false);
+
         setMenu(headerMenu.map(menu => {
             if (menu.link === router.pathname) menu.active = true;
             else menu.active = false;
@@ -24,7 +33,9 @@ export default function Header({ headerMenu }) {
 
         const width = window.innerWidth;
 
-        if (width > 768) setOpenMenu(true);
+        if (width > 768) {
+            setOpenMenu(false);
+        }
     }, [router, headerMenu]);
 
     return (
@@ -37,6 +48,7 @@ export default function Header({ headerMenu }) {
                         </a>
                     </Link>
                 </div>
+                
                 <div className="absolute right-0 z-20 h-full flex items-center sm:hidden">
                     <button onClick={() => toggleMenu()}>
                         <div className="space-y-1">
@@ -46,31 +58,34 @@ export default function Header({ headerMenu }) {
                         </div>
                     </button>
                 </div>
+
                 <Transition
-                    enter="transform transition transition-all sm:transition-none ease-in-out duration-700 sm:duration-0"
+                    enter={`transform transition transition-all sm:transition-none ease-in-out duration-700 sm:duration-0 ${!showMenu && 'transition-none'}`}
                     enterFrom="max-h-0 overflow-hidden"
                     enterTo="max-h-screen overflow-hidden"
-                    leave="transform transition transition-all sm:transition-none ease-out duration-700 sm:duration-0"
+                    leave={`transform transition transition-all sm:transition-none ease-out duration-500 sm:duration-0 ${!showMenu && 'transition-none'}`}
                     leaveFrom="max-h-screen overflow-hidden"
                     leaveTo="max-h-0 overflow-hidden"
                     show={openMenu}
                     as={Fragment}
                 >
                     <div className='sm:block absolute sm:relative top-20 sm:top-0 z-10 sm:p-0 w-full sm:w-auto shadow-md sm:shadow-none bg-white'>
-                        <ul className="block sm:flex items-center m-0 p-0 px-4 pt-8 sm:pt-0 pb-4 sm:pb-0 text-base font-bold mx-auto bg-white border-t-3 border-primary sm:border-none">
-                            {
-                                menu.map(item => {
-                                    return (
-                                        <li className={`pr-6 px-4 py-3 border-b sm:border-none border-gray-100 text-sm sm:text-base`} key={item.title}>
-                                            <Link href={item.link}>
-                                                <a className={`${item.active ? 'text-primary' : 'text-copy-overlay'}`}>{item.title}</a>
-                                            </Link>
-                                        </li>
-                                    );
-                                })
-                            }
-                        </ul>
-                    </div>
+                        <ClickAwayListener onClickAway={handleClickAway}>
+                            <ul className="block sm:flex items-center m-0 p-0 px-4 pt-8 sm:pt-0 pb-4 sm:pb-0 text-base font-bold mx-auto bg-white border-t-3 border-primary sm:border-none">
+                                {
+                                    menu.map(item => {
+                                        return (
+                                            <li className={`pr-6 px-4 py-3 border-b sm:border-none border-gray-100 text-sm sm:text-base`} key={item.title}>
+                                                <Link href={item.link}>
+                                                    <a className={`${item.active ? 'text-primary' : 'text-copy-overlay'}`} onClick={() => setShowMenu(false)}>{item.title}</a>
+                                                </Link>
+                                            </li>
+                                        );
+                                    })
+                                }
+                            </ul>
+                        </ClickAwayListener>
+                    </div>    
                 </Transition>
             </div>
         </div>

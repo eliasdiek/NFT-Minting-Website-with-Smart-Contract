@@ -1,6 +1,7 @@
 import { Fragment, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Transition } from '@headlessui/react';
+import ClickAwayListener from 'react-click-away-listener';
 
 const locations = [
     {
@@ -63,6 +64,10 @@ export default function Locations() {
         setOpenMenu(!openMenu);
     }
 
+	const handleClickAway = () => {
+		setOpenMenu(false);
+	};
+
     const scrollTo = (e, id) => {
         e.preventDefault();
 
@@ -116,17 +121,19 @@ export default function Locations() {
                 as={Fragment}
             >
                 <div className='absolute sm:relative top-30 sm:top-0 z-10 sm:p-0 sm:mb-6 w-full sm:w-full flex justify-center sm:shadow-none'>
-                    <ul className="block sm:flex mx-10 items-center px-2 pt-4 sm:pt-0 pb-4 sm:pb-0 text-base font-bold shadow-md sm:shadow-none bg-white border-t-3 border-primary sm:border-none">
-                    {
-                        locations.map(location => {
-                            return (
-                                <li key={location.name} className="pr-6 px-4 py-2 border-b sm:border-none border-gray-100 text-sm sm:text-base">
-                                    <a href={`#${location.name.toLocaleLowerCase()}`} className="text-xl text-primary font-muli font-medium" onClick={e => scrollTo(e, location.name.toLocaleLowerCase())}>{ location.name }</a>
-                                </li>
-                            )
-                        })
-                    }
-                    </ul>
+                    <ClickAwayListener onClickAway={handleClickAway}>
+                        <ul className="block sm:flex mx-10 items-center px-2 pt-4 sm:pt-0 pb-4 sm:pb-0 text-base font-bold shadow-md sm:shadow-none bg-white border-t-3 border-primary sm:border-none">
+                        {
+                            locations.map(location => {
+                                return (
+                                    <li key={location.name} className="pr-6 px-4 py-2 border-b sm:border-none border-gray-100 text-sm sm:text-base">
+                                        <a href={`#${location.name.toLocaleLowerCase()}`} className="text-xl text-primary font-muli font-medium" onClick={e => scrollTo(e, location.name.toLocaleLowerCase())}>{ location.name }</a>
+                                    </li>
+                                )
+                            })
+                        }
+                        </ul>
+                    </ClickAwayListener>
                 </div>
             </Transition>
 

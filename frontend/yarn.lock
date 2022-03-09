@@ -1719,6 +1719,11 @@ quick-lru@^5.1.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-5.1.1.tgz#366493e6b3e42a3a6885e2e99d18f80fb7a8c932"
   integrity sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==
 
+react-click-away-listener@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/react-click-away-listener/-/react-click-away-listener-2.1.0.tgz#c3884a31966395c5f7fe17ff59db3579ab92e7fa"
+  integrity sha512-D8l2a7zCgtUpo8FVeYb6rtWugxoUjPrWattu7DNakAMAHI8F81T6PAbuAco5qBkRLIS97Jr+0sl9Bf8iPzMTNg==
+
 react-dom@17.0.2:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-17.0.2.tgz#ecffb6845e3ad8dbfcdc498f0d0a939736502c23"

@@ -11,7 +11,7 @@ export default function Newsletter() {
                     </div>
                     <div className="py-8 pl-8 pr-8 sm:pr-0 sm:pl-8">
                         <input type="text" className="rounded-md px-4 py-3 outline-none w-full mb-4" placeholder="Your Email Address" />
-                        <button className="rounded-full text-xl py-1 px-8 bg-background-primary text-white font-normal">Join Mailing List</button>
+                        <button className="rounded-full text-xl py-1 px-6 bg-background-primary text-white font-normal">Join Mailing List</button>
                     </div>
                 </div>
             </div>
