@@ -67,8 +67,16 @@ export default function Locations() {
         e.preventDefault();
 
         try {
+            const width = window.innerWidth;
+            const adder = 240;
+
+            if (width < 768) {
+                adder = 300;
+                setOpenMenu(false);
+            }
+
             const elem = document.getElementById(id);
-            const height = elem.offsetTop + 240;
+            const height = elem.offsetTop + adder;
             console.log('[height]', height);
             window.scrollTo(0, height);
         }
