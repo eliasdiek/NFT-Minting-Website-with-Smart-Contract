@@ -115,6 +115,15 @@ module.exports = {
         '.copy-shadow-sm': {
           textShadow: '0em 0.1em 0.1em rgb(0 0 0 / 40%)'
         },
+        '.card': {
+          boxShadow: '0 1px 1px 0 rgb(0 0 0 / 12%), 0 2px 10px 0 rgb(0 0 0 / 7%)'
+        },
+        '.card-2': {
+          boxShadow: '0 2px 5px 0 rgb(0 0 0 / 16%), 0 2px 10px 0 rgb(0 0 0 / 12%)'
+        },
+        '.card-4': {
+          boxShadow: '0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)'
+        }
       })
     }
   ],

@@ -1,6 +1,18 @@
-import React from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { Fragment, useState } from 'react';
+import WalletConnector from '../modals/WalletConnector';
 
 export default function MemberShip({ memberShips }) {
+    let [isOpen, setIsOpen] = useState(false)
+
+    function closeModal() {
+      setIsOpen(false);
+    }
+  
+    function openModal() {
+      setIsOpen(true);
+    }
+
     return (
         <div className="w-full">
             <div className="grid grid-rows-3 sm:grid-rows-1 sm:grid-cols-4 gap-0.5">
@@ -47,12 +59,24 @@ export default function MemberShip({ memberShips }) {
                                             )
                                         })
                                     }
+                                    <div className="grid grid-cols-2 sm:grid-cols-1">
+                                        <div className="flex sm:hidden bg-background-secondary mb-0.5 items-center justify-center py-4 px-2 text-center">&nbsp;</div>
+                                        <div className="mb-0.5 flex items-center justify-center h-auto py-4 px-2 text-center">
+                                            <button className="uppercase bg-gradient-to-br from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold">Buy now</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )
                     })
                 }
             </div>
+
+            <div className="p-4 text-center mt-8">
+                <button className="rounded-full text-xl py-4 px-12 bg-background-primary text-white font-semibold" onClick={openModal}>Connect Wallet To Begin</button>
+            </div>
+
+            <WalletConnector isOpen={isOpen} closeModal={closeModal} />
         </div>
     );
 };
