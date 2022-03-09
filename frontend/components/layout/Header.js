@@ -25,7 +25,7 @@ export default function Header({ headerMenu }) {
         const width = window.innerWidth;
 
         if (width > 768) setOpenMenu(true);
-    }, [router]);
+    }, [router, headerMenu]);
 
     return (
         <div className="sm:container px-8 sm:px-4">
