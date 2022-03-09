@@ -1,3 +1,7 @@
+body {
+    font-size: 18px;
+    color: #000;
+}
 footer {
     background-color: #424242;
 }
@@ -13,4 +17,25 @@ footer {
     background-position: 50%;
     background-size: cover;
     min-height: 350px;
+}
+.about-membership-section {
+    background-image: url(/images/waves-bg-scaled.jpg);
+    background-position: 50%;
+    background-size: cover;
+}
+@media screen and (max-width: 768px) {
+    .vertical-timeline-element-icon {
+        margin-left: 5px !important;
+    }
+}
+@media only screen and (min-width: 1170px) {
+    .vertical-timeline-element {
+        margin: 2em 0 !important;
+    }
+}
+.vertical-timeline.vertical-timeline--two-columns:before {
+    margin-left: -1px !important;
+}
+.vertical-timeline::before {
+    width: 2px !important;
 }

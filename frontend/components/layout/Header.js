@@ -25,10 +25,10 @@ export default function Header({ headerMenu }) {
         const width = window.innerWidth;
 
         if (width > 768) setOpenMenu(true);
-    }, []);
+    }, [router]);
 
     return (
-        <div className="sm:container px-8 sm:px-8">
+        <div className="sm:container px-8 sm:px-4">
             <div className="flex items-center justify-start sm:justify-between relative z-20 sm:py-1">
                 <div className="relative z-20 py-7 sm:py-2 bg-white">
                     <Link href="/">
@@ -61,7 +61,7 @@ export default function Header({ headerMenu }) {
                             {
                                 menu.map(item => {
                                     return (
-                                        <li className={`pr-6 px-4 py-3 border-b sm:border-none border-gray-100 text-sm sm:text-lg`} key={item.title}>
+                                        <li className={`pr-6 px-4 py-3 border-b sm:border-none border-gray-100 text-sm sm:text-base`} key={item.title}>
                                             <Link href={item.link}>
                                                 <a className={`${item.active ? 'text-primary' : 'text-copy-overlay'}`}>{item.title}</a>
                                             </Link>

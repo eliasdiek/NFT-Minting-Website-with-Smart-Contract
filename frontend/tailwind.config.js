@@ -27,7 +27,8 @@ module.exports = {
         shadow: 'rgb(0 0 0 / 10%)'
       },
       fontSize: {
-        '17px': '17px'
+        '17px': '17px',
+        'xxl': '22px'
       }
     },
     fontFamily: {
