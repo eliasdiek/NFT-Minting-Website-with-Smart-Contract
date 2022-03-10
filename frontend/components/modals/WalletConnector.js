@@ -1,27 +1,17 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, useState } from 'react'
-import { Wallet, Metamask, Coinbase, WalletConnect, Times } from '../icons';
+import { Wallet, Times } from '../icons';
 
-const wallets = [
-    {
-        name: 'MetaMask',
-        key: 'metamask',
-        icon: <Metamask />,
-    },
-    {
-        name: 'Coinbase Wallet',
-        key: 'coinbase',
-        icon: <Coinbase />,
-    },
-    {
-        name: 'WalletConnect',
-        key: 'wallet_connect',
-        icon: <WalletConnect />,
-    },
-];
 
-export default function WalletConnector({ isOpen, closeModal }) {
+export default function WalletConnector({ isOpen, closeModal, wallets, activate, setWalletId }) {
     const [openLearn, setOpenLearn] = useState(false);
+
+    const { abi } = require("../../contracts/FathomyachtClub.json");
+
+    function onWalletSelect(action, index) {
+        activate(action);
+        setWalletId(index);
+    }
 
     return (
         <Fragment>
@@ -81,10 +71,10 @@ export default function WalletConnector({ isOpen, closeModal }) {
                             <div className="p-4">
                                 <ul className="w-full">
                                     {
-                                        wallets.map(wallet => {
+                                        wallets.map((wallet, index) => {
                                             return (
-                                                <li className="w-full py-4" key={wallet.key}>
-                                                    <button className="w-full flex items-center justify-center rounded-full card focus:ring-2 p-4">
+                                                <li className="w-full py-4" key={index}>
+                                                    <button className="w-full flex items-center justify-center rounded-full card focus:ring-2 p-4" onClick={() => { onWalletSelect(wallet.action, index) }}>
                                                         <div className="mr-2">
                                                             { wallet.icon }
                                                         </div>
