@@ -8,8 +8,8 @@ export default function WalletConnector({ isOpen, closeModal, wallets, activate,
 
     const { abi } = require("../../contracts/FathomyachtClub.json");
 
-    function onWalletSelect(action, index) {
-        activate(action);
+    async function onWalletSelect(action, index) {
+        await activate(action);
         setWalletId(index);
     }
 

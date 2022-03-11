@@ -1,8 +1,28 @@
-export const STATUS_UPDATE = "STATUS_UPDATE";
+export const INIT = "INIT";
+export const SET_WALLET_ADDRESS = "SET_WALLET_ADDRESS";
+export const REMOVE_WALLET_ADDRESS = "REMOVE_WALLET_ADDRESS";
 
-export const statusUpdate = (status) => {
+const init = () => {
 	return {
-		type: STATUS_UPDATE,
-		status: status,
+		type: INIT
 	};
+};
+
+const setWalletAddress = (address) => {
+	return {
+		type: SET_WALLET_ADDRESS,
+		address: address
+	};
+};
+
+const removeWalletAddress = () => {
+	return {
+		type: REMOVE_WALLET_ADDRESS
+	};
+};
+
+export {
+	init,
+	setWalletAddress,
+	removeWalletAddress
 };

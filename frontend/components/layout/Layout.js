@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
+import { useDispatch } from "react-redux";
+import { init } from '../../store/actions';
 
 const headerMenu = [
     {
@@ -44,6 +46,12 @@ const footerMenu = [
 ];
 
 export default function Layout(props) {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(init());
+    }, []);  
+    
     return (
         <React.Fragment>
             <header className="w-full shadow-sm shadow-shadow sm:fixed top-0 bg-white z-20">
