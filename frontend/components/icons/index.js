@@ -4,6 +4,7 @@ import Coinbase from './Coinbase';
 import WalletConnectIcon from './WalletConnect';
 import Times from './Times';
 import PowerOff from './PowerOff';
+import Ether from './Ether';
 
 export {
     Wallet,
@@ -11,5 +12,6 @@ export {
     Coinbase,
     WalletConnectIcon,
     Times,
-    PowerOff
+    PowerOff,
+    Ether
 };

@@ -3,14 +3,20 @@ import { Fragment, useState } from 'react'
 import { Wallet, Times } from '../icons';
 
 
-export default function WalletConnector({ isOpen, closeModal, wallets, activate, setWalletId }) {
+export default function WalletConnector({ isOpen, closeModal, wallets, activate, onSetWalletId }) {
     const [openLearn, setOpenLearn] = useState(false);
 
     const { abi } = require("../../contracts/FathomyachtClub.json");
 
     async function onWalletSelect(action, index) {
-        await activate(action);
-        setWalletId(index);
+        try {
+            await activate(action);
+        }
+        catch(err) {
+            console.log('[wallet connector]', err);
+        }
+
+        onSetWalletId(index);
     }
 
     return (
