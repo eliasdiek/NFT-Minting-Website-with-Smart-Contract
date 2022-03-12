@@ -5,9 +5,10 @@ import QuantitySelector from '../inputs/QuantitySelector';
 import WalletConnection from '../blocks/WalletConnection';
 import Cart from '../blocks/Cart';
 import { Ether } from '../icons';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { addToCart } from '../../store/actions';
 import Web3 from 'web3';
-import CoinGecko from 'coingecko-api';
+import axios from 'axios';
 
 const MAX_MINTABLE = 2;
 
@@ -18,12 +19,12 @@ const initial_nft_prices = [
         ethPrice: 0
     },
     {
-        name: 'Power',
+        name: 'Yacht',
         usdPrice: 10000,
         ethPrice: 0
     },
     {
-        name: 'Power',
+        name: 'Prestige',
         usdPrice: 15000,
         ethPrice: 0
     }
@@ -31,23 +32,22 @@ const initial_nft_prices = [
 
 export default function Purchase() {
     const router = useRouter();
+    const dispatch = useDispatch();
     const [qty, setQty] = useState(1);
+    const [error, setError] = useState('');
     const [ethPrice, setEthPrice] = useState(0);
     const [nftPrices, setNftPrices] = useState(initial_nft_prices);
     const [balance, setBalance] = useState(0);
     const [memberShip, setMemberShip] = useState('');
     const walletAddr = useSelector((state) => state.address);
+    const cart = useSelector((state) => state.cart);
 
     async function init() {
         try {
-            const CoinGeckoClient = new CoinGecko();
+            let result = await axios.get('/api/coinmarketcap');
 
-            let data = await CoinGeckoClient.exchanges.fetchTickers('bitfinex', {
-                coin_ids: ['ethereum']
-            });
-
-            const ethPrice = data.data.tickers.filter(ticker => ticker.target === 'USD')[0].last;
-            _nftPrices = nftPrices.map(nftPrice => {
+            const ethPrice = result.data.eth;
+            const _nftPrices = nftPrices.map(nftPrice => {
                 nftPrice.ethPrice = parseFloat(nftPrice.usdPrice / ethPrice).toFixed(4);
 
                 return nftPrice;
@@ -56,10 +56,23 @@ export default function Purchase() {
             setEthPrice(ethPrice);
             setNftPrices(_nftPrices);
     
-            console.log('[data]', ethPrice);
+            console.log('[ethPrice]', ethPrice, _nftPrices);
         }
         catch(err) {
             console.log('[err]', err);
+        }
+    }
+
+    function cartToAdd(e) {
+        setError("");
+        let totalQty = qty;
+        const existingQty = cart.find(item => item.membership === memberShip)?.qty;
+        console.log('existingQty]', existingQty);
+        if (existingQty) totalQty += existingQty;
+        if (totalQty > 2) setError("You can't buy more than 2 tokens at once!");
+        else {
+            dispatch(addToCart(memberShip, qty, nftPrices.filter(nftPrice => nftPrice.name == memberShip)[0]?.ethPrice));
+            scrollTo(e, 'cart-container');
         }
     }
 
@@ -85,6 +98,26 @@ export default function Purchase() {
 
         setQty(qty - 1);
     }
+
+    const scrollTo = (e, id) => {
+        e.preventDefault();
+
+        try {
+            const width = window.innerWidth;
+            const adder = 100;
+
+            if (width < 768) {
+                adder = 15;
+            }
+
+            const elem = document.getElementById(id);
+            const height = elem.offsetTop - adder;
+            window.scrollTo(0, height);
+        }
+        catch(err) {
+            console.log(err);
+        }
+    };
 
     useEffect(() => {
         init();
@@ -135,8 +168,10 @@ export default function Purchase() {
                                 </div>
                             </div>
 
+                            { error && <div className="font-medium text-base text-center mt-4 bg-red-100 p-4 text-red-800">{error}</div> }
+
                             <div className="py-4">
-                                <h6 className="font-light font-muli text-2xl py-2">NFT Description</h6>
+                                <h6 className="font-light font-muli text-2xl py-2" onClick={init}>NFT Description</h6>
                                 <p className="py-2 font-normal text-base">This token represents your ownership of membership to our yacht club.</p>
                                 <p className="py-2 font-normal text-base">As a Power member, you will have access to charter exclusive VIP yachts 36ft -50ft </p>
                                 <p className="py-2 font-normal text-base">As a member, can bring up to 2 guests per token. </p>
@@ -145,8 +180,9 @@ export default function Purchase() {
 
                             <div className="flex justify-between items-center">
                                 <button
-                                    className={`w-full uppercase bg-gradient-to-br from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold ${walletAddr && balance && qty > 0 && ethPrice ? 'opacity-1' : 'opacity-50 cursor-not-allowed'}`}                                    disabled={walletAddr && balance && qty > 0 && ethPrice > 0 ? false :  true}
-                                    onClick={init}
+                                    className={`w-full uppercase bg-gradient-to-br from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold ${walletAddr && balance && qty > 0 && ethPrice ? 'opacity-1' : 'opacity-50 cursor-not-allowed'}`}
+                                    disabled={walletAddr && balance && qty > 0 && ethPrice > 0 ? false :  true}
+                                    onClick={cartToAdd}
                                 >
                                     Add to cart
                                 </button>
@@ -159,9 +195,12 @@ export default function Purchase() {
                     <WalletConnection />
                 </div>
 
-                <div>
-                    <Cart />
-                </div>
+                {
+                    walletAddr && balance > 0 &&
+                    <div id="cart-container">
+                        <Cart />
+                    </div>
+                }
 
             </div>
         </React.Fragment>

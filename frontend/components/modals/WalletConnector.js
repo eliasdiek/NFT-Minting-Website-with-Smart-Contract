@@ -6,8 +6,6 @@ import { Wallet, Times } from '../icons';
 export default function WalletConnector({ isOpen, closeModal, wallets, activate, onSetWalletId }) {
     const [openLearn, setOpenLearn] = useState(false);
 
-    const { abi } = require("../../contracts/FathomyachtClub.json");
-
     async function onWalletSelect(action, index) {
         try {
             await activate(action);
