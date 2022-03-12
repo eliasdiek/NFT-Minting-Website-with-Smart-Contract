@@ -74,7 +74,7 @@ export default function Cart({ memberShip }) {
             <div className="py-2">
                 <h4 className="font-medium mb-4">Please review your order selection</h4>
 
-                { minted && <div className="mb-8">
+                { minted && cart?.length < 0 && <div className="mb-8">
                     <div className="text-2xl text-center text-primary font-medium py-6">Thank you for purchasing { memberShip } membership!</div>
                     <div className="flex items-center justify-center">
                         <Link href="/">
