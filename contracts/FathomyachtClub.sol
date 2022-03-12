@@ -136,7 +136,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     require(msg.value >= NFT_PRICE[tierNumber] * number, "Amount of ether sent not correct.");
 
     uint8 maxBatchable = 2;
-    require(number < maxBatchable, "You are not allowed to buy more than 2 tokens at once.");
+    require(number <= maxBatchable, "You are not allowed to buy more than 2 tokens at once.");
 
     uint256[] storage tierMintLimit = PRESALE_TIER_MINT_LIMIT;
     mapping(uint8 => uint256) storage tierMintCounter = _preSaleMintCounter;

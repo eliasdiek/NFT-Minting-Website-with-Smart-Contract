@@ -4,6 +4,7 @@ export const REMOVE_WALLET_ADDRESS = "REMOVE_WALLET_ADDRESS";
 export const SET_WALLET_ID = "SET_WALLET_ID";
 export const ADD_TO_CART = "ADD_TO_CART";
 export const REMOVE_CART_ITEM = "REMOVE_CART_ITEM";
+export const CLEAR_CART = "CLEAR_CART";
 
 const init = () => {
 	return {
@@ -31,9 +32,10 @@ const setWalletId = (id) => {
 	}
 }
 
-const addToCart = (membership, qty, price) => {
+const addToCart = (tierNumber, membership, qty, price) => {
 	return {
 		type: ADD_TO_CART,
+		tierNumber: tierNumber,
 		membership: membership,
 		qty: qty,
 		price: price
@@ -47,11 +49,18 @@ const removeCartItem = (index) => {
 	}
 }
 
+const clearCart = () => {
+	return {
+		type: CLEAR_CART
+	}
+}
+
 export {
 	init,
 	setWalletAddress,
 	removeWalletAddress,
 	setWalletId,
 	addToCart,
-	removeCartItem
+	removeCartItem,
+	clearCart
 };

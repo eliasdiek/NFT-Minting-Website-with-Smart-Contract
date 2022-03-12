@@ -10,22 +10,28 @@ import { addToCart } from '../../store/actions';
 import Web3 from 'web3';
 import axios from 'axios';
 
+const { abi } = require("../../contracts/FathomyachtClub.json");
+const contractAddress = '0xbF57863aB1aF9F11C1faF2D4eA385E884a6ffD21';
+
 const MAX_MINTABLE = 2;
 
-const initial_nft_prices = [
+const initialTiers = [
     {
+        tierNumber: 0,
         name: 'Power',
-        usdPrice: 5000,
+        usdPrice: 50,
         ethPrice: 0
     },
     {
+        tierNumber: 1,
         name: 'Yacht',
-        usdPrice: 10000,
+        usdPrice: 100,
         ethPrice: 0
     },
     {
+        tierNumber: 2,
         name: 'Prestige',
-        usdPrice: 15000,
+        usdPrice: 150,
         ethPrice: 0
     }
 ];
@@ -36,7 +42,7 @@ export default function Purchase() {
     const [qty, setQty] = useState(1);
     const [error, setError] = useState('');
     const [ethPrice, setEthPrice] = useState(0);
-    const [nftPrices, setNftPrices] = useState(initial_nft_prices);
+    const [tiers, setTiers] = useState(initialTiers);
     const [balance, setBalance] = useState(0);
     const [memberShip, setMemberShip] = useState('');
     const walletAddr = useSelector((state) => state.address);
@@ -47,33 +53,56 @@ export default function Purchase() {
             let result = await axios.get('/api/coinmarketcap');
 
             const ethPrice = result.data.eth;
-            const _nftPrices = nftPrices.map(nftPrice => {
-                nftPrice.ethPrice = parseFloat(nftPrice.usdPrice / ethPrice).toFixed(4);
+            const _tiers = tiers.map(tier => {
+                tier.ethPrice = parseFloat(tier.usdPrice / ethPrice).toFixed(4);
 
-                return nftPrice;
+                return tier;
             });
 
             setEthPrice(ethPrice);
-            setNftPrices(_nftPrices);
+            setTiers(_tiers);
     
-            console.log('[ethPrice]', ethPrice, _nftPrices);
+            console.log('[ethPrice]', ethPrice, _tiers);
         }
         catch(err) {
             console.log('[err]', err);
         }
     }
 
-    function cartToAdd(e) {
+    async function cartToAdd(e) {
         setError("");
+        const tier = tiers.find(tier => tier.name == memberShip);
         let totalQty = qty;
         const existingQty = cart.find(item => item.membership === memberShip)?.qty;
         console.log('existingQty]', existingQty);
         if (existingQty) totalQty += existingQty;
         if (totalQty > 2) setError("You can't buy more than 2 tokens at once!");
         else {
-            dispatch(addToCart(memberShip, qty, nftPrices.filter(nftPrice => nftPrice.name == memberShip)[0]?.ethPrice));
+            await setTierPrice(tier?.ethPrice, tier?.tierNumber);
+
+            dispatch(
+                addToCart(
+                    tier?.tierNumber,
+                    memberShip,
+                    qty,
+                    tier?.ethPrice
+                )
+            );
             scrollTo(e, 'cart-container');
         }
+    }
+
+    async function setTierPrice(tierPrice, tierNumber) {
+        const { ethereum } = window;
+
+        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+        const w3 = new Web3(ethereum);
+        const contract_abi = new w3.eth.Contract(abi, contractAddress);
+
+        const result = await contract_abi.methods.setTierPrice(w3.utils.toWei(tierPrice), tierNumber).send({ from: accounts[0] });
+        console.log('[result]', result);
+
+        return result;
     }
 
     async function getBalance(addr) {
@@ -153,7 +182,7 @@ export default function Purchase() {
                                             <Ether width={'2rem'} height={'2rem'} />
                                         </span>
                                         <span className="text-3xl font-bold text-gray-900 dark:text-white h-12 flex items-center ml-0">
-                                            { ethPrice ? nftPrices.filter(nftPrice => nftPrice.name == memberShip)[0]?.ethPrice : '--' }
+                                            { ethPrice ? tiers.find(tier => tier.name == memberShip)?.ethPrice : '--' }
                                         </span>
                                     </div>
                                 </div>
@@ -198,7 +227,7 @@ export default function Purchase() {
                 {
                     walletAddr && balance > 0 &&
                     <div id="cart-container">
-                        <Cart />
+                        <Cart memberShip={memberShip} />
                     </div>
                 }
 

@@ -5,7 +5,8 @@ import {
     REMOVE_WALLET_ADDRESS,
     SET_WALLET_ID,
     ADD_TO_CART,
-    REMOVE_CART_ITEM
+    REMOVE_CART_ITEM,
+    CLEAR_CART
 } from "../actions";
 
 const initialState = {
@@ -53,6 +54,7 @@ const mainReducer = (state = initialState, action) => {
             }
         case ADD_TO_CART:
             const cartItem = {
+                tierNumber: action.tierNumber,
                 membership: action.membership,
                 qty: action.qty,
                 price: action.price
@@ -61,7 +63,7 @@ const mainReducer = (state = initialState, action) => {
             let itemExistsIndex;
             const itemExists = myCart.find(
                 (item, index) => {
-                    if (item.membership === cartItem.membership) {
+                    if (item.tierNumber === cartItem.tierNumber) {
                         itemExistsIndex = index;
                         return true;
                     }
@@ -96,6 +98,13 @@ const mainReducer = (state = initialState, action) => {
             return {
                 ...state,
                 cart: cartToRemove
+            }
+        case CLEAR_CART:
+            localStorage.removeItem('cart');
+
+            return {
+                ...state,
+                cart: []
             }
         default:
             return state;
