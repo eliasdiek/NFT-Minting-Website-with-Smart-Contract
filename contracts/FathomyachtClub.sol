@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "./IAggregatorV3.sol";
 
 contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   using Counters for Counters.Counter;
@@ -19,8 +20,8 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
   mapping(uint256 => uint8) private _tokenToTier;
 
-  // mapping for tier to price(0: power, 1: yacht, 2: prestige)
-  uint256[] private NFT_PRICE = [0, 0, 0];
+  // NFT prices in USD, mapping for tier to price(0: power, 1: yacht, 2: prestige)
+  uint256[] private NFT_PRICE = [50, 100, 150];
   uint256[] private PRESALE_TIER_MINT_LIMIT = [100, 100, 50];
   uint256[] private PUBLIC_SALE_TIER_MINT_LIMIT = [900, 900, 950];
   // 0: presale start block, 1: public sale start block
@@ -32,8 +33,11 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   // Mapping from address to white list flag(1: added, 0: removed)
   mapping(address => uint8) private _whitelister;
 
+  AggregatorV3Interface internal priceFeed;
+
   constructor() ERC721("Fathom Yacht Club", "FYC") {
     _setDefaultRoyalty(msg.sender, 1000);
+    priceFeed = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
   }
 
   modifier ableMintBatch(uint256 number, uint8 tierNumber) {
@@ -130,10 +134,15 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   }
 
   function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(uint256) {
+    uint256 ethPrice = uint256(getLatestPrice());
     require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
     require(NFT_PRICE[tierNumber] != 0, "Tier price is not set.");
     require(MAX_TOKEN > number + _tokenIds.current() + 1, "Not enough tokens left to buy.");
-    require(msg.value >= NFT_PRICE[tierNumber] * number, "Amount of ether sent not correct.");
+    require(msg.value >= (((NFT_PRICE[tierNumber] * number) * (10 ** 8)) / ethPrice) * (10**18), "Amount of ether sent not correct.");
+
+    address payable tgt = payable(msg.sender);
+    (bool success1, ) = tgt.call{ value: msg.value - (((NFT_PRICE[tierNumber] * number) * (10 ** 8)) / ethPrice) * (10**18) }("");
+    require(success1, "Failed to refund");
 
     uint8 maxBatchable = 2;
     require(number <= maxBatchable, "You are not allowed to buy more than 2 tokens at once.");
@@ -180,5 +189,16 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
 
   function setRoality(address receiver, uint96 feeNumerator) external onlyOwner {
     _setDefaultRoyalty(receiver, feeNumerator);
+  }
+
+  function getLatestPrice() public view returns (int) {
+    (
+      ,
+      int price,
+      ,
+      ,
+      
+    ) = priceFeed.latestRoundData();
+    return price;
   }
 }
