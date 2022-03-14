@@ -37,7 +37,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
 
   constructor() ERC721("Fathom Yacht Club", "FYC") {
     _setDefaultRoyalty(msg.sender, 1000);
-    priceFeed = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
+    priceFeed = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);
   }
 
   modifier ableMintBatch(uint256 number, uint8 tierNumber) {

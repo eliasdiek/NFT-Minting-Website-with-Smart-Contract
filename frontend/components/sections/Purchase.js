@@ -78,8 +78,6 @@ export default function Purchase() {
         if (existingQty) totalQty += existingQty;
         if (totalQty > 2) setError("You can't buy more than 2 tokens at once!");
         else {
-            await setTierPrice(tier?.ethPrice, tier?.tierNumber);
-
             dispatch(
                 addToCart(
                     tier?.tierNumber,
@@ -91,20 +89,7 @@ export default function Purchase() {
             scrollTo(e, 'cart-container');
         }
     }
-
-    async function setTierPrice(tierPrice, tierNumber) {
-        const { ethereum } = window;
-
-        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-        const w3 = new Web3(ethereum);
-        const contract_abi = new w3.eth.Contract(abi, contractAddress);
-
-        const result = await contract_abi.methods.setTierPrice(w3.utils.toWei(tierPrice), tierNumber).send({ from: accounts[0] });
-        console.log('[result]', result);
-
-        return result;
-    }
-
+    
     async function getBalance(addr) {
         if (window == undefined) return false;
 
