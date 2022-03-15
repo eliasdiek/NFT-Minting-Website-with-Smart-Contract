@@ -212,7 +212,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       total += (_preSaleMintCounter[i] + _publicSaleMintCounter[i]);
     }
     
-    return _tokenIds.current();
+    return total;
   }
 
   function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981) returns (bool) {
