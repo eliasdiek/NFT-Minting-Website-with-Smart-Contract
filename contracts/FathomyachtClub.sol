@@ -18,7 +18,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   uint256[] private NFT_PRICE = [50, 100, 150, 0, 0];
   uint256[] private PRESALE_TIER_MINT_LIMIT = [100, 100, 50, 0, 0];
   uint256[] private PUBLIC_SALE_TIER_MINT_LIMIT = [900, 900, 950, 0, 0];
-  string private _tokenBatchURI = "https://gateway.pinata.cloud/ipfs/QmSSGFwHzneUFom4taWhMv1MNYNrGUFFQB3VU8rgWZrFNX";
+  string private _tokenBatchURI = "https://gateway.pinata.cloud/ipfs/QmRgmtg7T8nL3iP81eg3gTWd6WHUjs75M4FzGYx9cthYCg";
   // 0: presale start block, 1: public sale start block
   uint256[] private EVENT_BLOCK = [10264904, 10437473];
   // Mapping from address to minted number of NFTs(0: power, 1: yacht, 2: prestige)
