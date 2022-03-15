@@ -11,7 +11,7 @@ import Web3 from 'web3';
 import axios from 'axios';
 
 const { abi } = require("../../contracts/FathomyachtClub.json");
-const contractAddress = '0xbF57863aB1aF9F11C1faF2D4eA385E884a6ffD21';
+const contractAddress = '0x72363A6192d7e891c8636a349c90975569B0745c';
 
 const MAX_MINTABLE = 2;
 
@@ -89,7 +89,7 @@ export default function Purchase() {
             scrollTo(e, 'cart-container');
         }
     }
-    
+
     async function getBalance(addr) {
         if (window == undefined) return false;
 
@@ -135,6 +135,10 @@ export default function Purchase() {
 
     useEffect(() => {
         init();
+
+        setInterval(() => {
+            init();
+        }, 30 * 60 * 1000); // fetch & set the ether price in every 5 minutes
     }, []);
 
     useEffect(() => {
@@ -145,6 +149,14 @@ export default function Purchase() {
     useEffect(() => {
         setMemberShip(router.query?.membership);
     }, [router]);
+
+    if (!ethPrice) return (
+        <React.Fragment>
+            <div className="container flex items-center justify-center">
+                <span className="block animate-spin bg-transparent border-3 border-t-primary rounded-full h-10 w-10"></span>
+            </div>
+        </React.Fragment>
+    );
 
     return (
         <React.Fragment>
@@ -185,7 +197,7 @@ export default function Purchase() {
                             { error && <div className="font-medium text-base text-center mt-4 bg-red-100 p-4 text-red-800">{error}</div> }
 
                             <div className="py-4">
-                                <h6 className="font-light font-muli text-2xl py-2" onClick={init}>NFT Description</h6>
+                                <h6 className="font-light font-muli text-2xl py-2">NFT Description</h6>
                                 <p className="py-2 font-normal text-base">This token represents your ownership of membership to our yacht club.</p>
                                 <p className="py-2 font-normal text-base">As a Power member, you will have access to charter exclusive VIP yachts 36ft -50ft </p>
                                 <p className="py-2 font-normal text-base">As a member, can bring up to 2 guests per token. </p>

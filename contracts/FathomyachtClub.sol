@@ -2,28 +2,28 @@
 pragma solidity >=0.8.9 <0.9.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+// import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./IAggregatorV3.sol";
+import "./Counters.sol";
 
 contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
-  uint256 private MAX_TOKEN = 8000;
-
-  uint256 private _powerCount = 0;
-  uint256 private _yachtCount = 0;
-  uint256 private _prestigeCount = 0;
+  uint256 private MAX_TOKEN = 10000;
+  uint256 private MAX_MINTABLE_LIMIT = 1000;
 
   // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
   mapping(uint256 => uint8) private _tokenToTier;
 
   // NFT prices in USD, mapping for tier to price(0: power, 1: yacht, 2: prestige)
-  uint256[] private NFT_PRICE = [50, 100, 150];
-  uint256[] private PRESALE_TIER_MINT_LIMIT = [100, 100, 50];
-  uint256[] private PUBLIC_SALE_TIER_MINT_LIMIT = [900, 900, 950];
+  uint256[] private NFT_PRICE = [50, 100, 150, 0, 0];
+  uint256[] private PRESALE_TIER_MINT_LIMIT = [100, 100, 50, 0, 0];
+  uint256[] private PUBLIC_SALE_TIER_MINT_LIMIT = [900, 900, 950, 0, 0];
+  uint256[] private _tokenIdRange = [8000, 0, 2000, 4000, 6000];
+  string private _tokenBatchURI = "https://gateway.pinata.cloud/ipfs/QmSSGFwHzneUFom4taWhMv1MNYNrGUFFQB3VU8rgWZrFNX";
   // 0: presale start block, 1: public sale start block
   uint256[] private EVENT_BLOCK = [10264904, 10437473];
   // Mapping from address to minted number of NFTs(0: power, 1: yacht, 2: prestige)
@@ -41,6 +41,11 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   }
 
   modifier ableMintBatch(uint256 number, uint8 tierNumber) {
+    require(NFT_PRICE[tierNumber] != 0, "Tier price is not set.");
+    require(number <= 2, "You are not allowed to buy more than 2 tokens at once.");
+    require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
+    require(MAX_TOKEN > number + totalSupply() + 1, "Not enough tokens left to buy.");
+
     uint8 blockStatus = checkBlock(msg.sender);
     require(blockStatus > 0, "Not available to mint.");
     _;
@@ -97,6 +102,14 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     MAX_TOKEN = limit;
   }
 
+  function getMaxMintableLimit() external view returns(uint256) {
+    return MAX_MINTABLE_LIMIT;
+  }
+
+  function setMaxMintableLimit(uint256 limit) external onlyOwner {
+    MAX_MINTABLE_LIMIT = limit;
+  }
+
   function getTierLimit(uint8 tierNumber) external view returns(uint256) {
     require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
 
@@ -129,23 +142,42 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     require(success1, "Failed to Withdraw Ether");
   }
 
+  function getTokenURI(uint256 _tokenId) public view returns(string memory) {
+    string memory subDirectory = 'Not specified';
+    if (_tokenId > 0 && _tokenId <= 2000) {
+      subDirectory = '/Yacht/';
+    }
+    else if (_tokenId > 2000 && _tokenId <= 4000) {
+      subDirectory = '/Prestige/';
+    }
+    else if (_tokenId > 4000 && _tokenId <= 6000) {
+      subDirectory = '/Ultra/';
+    }
+    else if (_tokenId > 6000 && _tokenId <= 8000) {
+      subDirectory = '/Reserve/';
+    }
+    else if (_tokenId > 8000 && _tokenId <= 10000) {
+      subDirectory = '/Power/';
+    }
+
+    return string(abi.encodePacked(_tokenBatchURI, subDirectory, uint2str(_tokenId)));
+  }
+
+  function setTokenBatchURI(string memory _batchTokenURI) external onlyOwner {
+    _tokenBatchURI = _batchTokenURI;
+  }
+
   function setTokenURI(uint256 number, string memory tokenURI) public onlyOwner {
     _setTokenURI(number, tokenURI);
   }
 
-  function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(uint256) {
-    uint256 ethPrice = uint256(getLatestPrice());
-    require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
-    require(NFT_PRICE[tierNumber] != 0, "Tier price is not set.");
-    require(MAX_TOKEN > number + _tokenIds.current() + 1, "Not enough tokens left to buy.");
-    require(msg.value >= (((NFT_PRICE[tierNumber] * number) * (10 ** 8)) / ethPrice) * (10**18), "Amount of ether sent not correct.");
+  function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(string memory) {
+    require(msg.value >= ((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLatestPrice()), string(abi.encodePacked(uint2str(((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLocalPrice())), " :Amount of ether sent not correct.")));
 
+    // refund the remainder
     address payable tgt = payable(msg.sender);
-    (bool success1, ) = tgt.call{ value: msg.value - (((NFT_PRICE[tierNumber] * number) * (10 ** 8)) / ethPrice) * (10**18) }("");
+    (bool success1, ) = tgt.call{ value: msg.value - (((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLatestPrice())) }("");
     require(success1, "Failed to refund");
-
-    uint8 maxBatchable = 2;
-    require(number <= maxBatchable, "You are not allowed to buy more than 2 tokens at once.");
 
     uint256[] storage tierMintLimit = PRESALE_TIER_MINT_LIMIT;
     mapping(uint8 => uint256) storage tierMintCounter = _preSaleMintCounter;
@@ -161,18 +193,27 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
 
     uint256 newItemId = 0;
+    // set where start the tokenIds to be incremented
+    _tokenIds.set(_tokenIdRange[tierNumber] + _preSaleMintCounter[tierNumber] + _publicSaleMintCounter[tierNumber]);
+
     for (uint256 i = 0; i < number; i++) {
       _tokenIds.increment();
       newItemId = _tokenIds.current();
       _mint(msg.sender, newItemId);
       _tokenToTier[newItemId] = tierNumber;
+      setTokenURI(newItemId, getTokenURI(newItemId));
     }
 
-    return newItemId;
+    return 'success';
   }
 
   function totalSupply() public view returns(uint256) {
-    return _tokenIds.current();
+    uint256 total = 0;
+    for(uint8 i = 0; i < 5; i++) {
+      total += (_preSaleMintCounter[i] + _publicSaleMintCounter[i]);
+    }
+    
+    return total;
   }
 
   function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981) returns (bool) {
@@ -200,5 +241,48 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       
     ) = priceFeed.latestRoundData();
     return price;
+  }
+
+  // use this for test purpose and delete when deploy on the mainnet
+  function getLocalPrice() public pure returns (int) {
+    int price = 257508605065;
+    return price;
+  }
+
+  function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
+    string memory prefix = '';
+    if (_i == 0) {
+      return "0";
+    }
+    else if (_i > 0 && _i < 10) {
+      prefix = '0000';
+    }
+    else if (_i >= 10 && _i < 100) {
+      prefix = '000';
+    }
+    else if (_i >= 100 && _i < 1000) {
+      prefix = '00';
+    }
+    else if (_i >= 1000 && _i < 10000) {
+      prefix = '0';
+    }
+
+    uint j = _i;
+    uint len;
+    while (j != 0) {
+      len++;
+      j /= 10;
+    }
+    bytes memory bstr = new bytes(len);
+    uint k = len;
+    while (_i != 0) {
+      k = k-1;
+      uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+      bytes1 b1 = bytes1(temp);
+      bstr[k] = b1;
+      _i /= 10;
+    }
+
+    return string(abi.encodePacked(prefix, string(bstr)));
   }
 }

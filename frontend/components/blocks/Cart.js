@@ -6,7 +6,7 @@ import Web3 from 'web3';
 
 export default function Cart({ memberShip }) {
     const { abi } = require("../../contracts/FathomyachtClub.json");
-    const contractAddress = '0xbF57863aB1aF9F11C1faF2D4eA385E884a6ffD21';
+    const contractAddress = '0x72363A6192d7e891c8636a349c90975569B0745c';
 
     const [loading, setLoading] = useState(false);
     const [minted, setMinted] = useState(false);
@@ -27,7 +27,6 @@ export default function Cart({ memberShip }) {
             const totalPrice = String(price * qty);
             const result = await contract_abi.methods.mintBatch(qty, tierNumber).send({from: accounts[0], value: w3.utils.toWei(totalPrice)});
     
-            console.log('[result]', result);
             return result;
         }
         catch (err) {
@@ -36,17 +35,22 @@ export default function Cart({ memberShip }) {
         }
     }
 
-    async function mintMatch() {
+    async function mintMatch(e) {
         try {
+            setMinted(false);
             setLoading(true);
+            let result;
             for (const item of cart) {
-                await mint(item.qty, item.tierNumber, item.price);
+                result = await mint(item.qty, item.tierNumber, item.price);
             }
 
-            console.log('[Minted]');
+            if (result?.status) {
+                setMinted(true);
+                dispatch(clearCart());
+                scrollTo(e, 'cart-container');
+            }
+
             setLoading(false);
-            dispatch(clearCart());
-            setMinted(true);
         }
         catch (err) {
             console.log('[err]', err);
@@ -64,17 +68,47 @@ export default function Cart({ memberShip }) {
         return tierPrice;
     }
 
+    async function getTotalSupply() {
+        var w3 = new Web3(ethereum);
+        var contract_abi = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(contractAddress));
+        const totalSupply = await contract_abi.methods.totalSupply().call();
+        console.log('[totalSupply]', totalSupply);
+
+        return totalSupply;
+    }
+
+    const scrollTo = (e, id) => {
+        e.preventDefault();
+
+        try {
+            const width = window.innerWidth;
+            const adder = 100;
+
+            if (width < 768) {
+                adder = 15;
+            }
+
+            const elem = document.getElementById(id);
+            const height = elem.offsetTop - adder;
+            window.scrollTo(0, height);
+        }
+        catch(err) {
+            console.log(err);
+        }
+    };
+
     useEffect(() => {
         console.log('[cart]', cart);
+        if (cart.length > 0) setMinted(false);
     }, [cart]);
 
     return (
         <div className="p-4 border rounded-xl border-gray-200">
-            <h2 className="font-light text-3xl py-2 mb-4 font-muli">Checkout</h2>
+            <h2 className="font-light text-3xl py-2 mb-4 font-muli" onClick={getTotalSupply}>Checkout</h2>
             <div className="py-2">
                 <h4 className="font-medium mb-4">Please review your order selection</h4>
 
-                { minted && cart?.length < 0 && <div className="mb-8">
+                { minted && cart?.length == 0 && <div className="mb-8">
                     <div className="text-2xl text-center text-primary font-medium py-6">Thank you for purchasing { memberShip } membership!</div>
                     <div className="flex items-center justify-center">
                         <Link href="/">
@@ -130,8 +164,8 @@ export default function Cart({ memberShip }) {
 
                     <div className="py-8 flex items-center justify-center">
                         <button
-                         className={`flex items-center justify-center uppercase bg-gradient-to-br w-72 from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold focus:ring-4 ${cart.length > 0 ? 'opacity-1' : 'opacity-50 cursor-not-allowed'}`}
-                         disabled={cart.length > 0 ? false :  true}
+                         className={`flex items-center justify-center uppercase bg-gradient-to-br w-72 from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold focus:ring-4 ${cart.length == 0 ? 'opacity-50 cursor-not-allowed' : 'opacity-1'} ${loading && 'cursor-not-allowed' }`}
+                         disabled={loading || cart.length == 0 ? true :  false}
                          onClick={mintMatch}
                         >
                             { loading ? <span
