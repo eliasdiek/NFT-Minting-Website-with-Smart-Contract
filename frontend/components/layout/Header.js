@@ -91,6 +91,10 @@ export default function Header({ headerMenu }) {
                         </ClickAwayListener>
                     </div>    
                 </Transition>
+
+                <div>
+                    <Image src="/images/default.png" className="w-1/2 sm:w-full" alt="Profile picture" width={30} height={30} />
+                </div>
             </div>
         </div>
     );
