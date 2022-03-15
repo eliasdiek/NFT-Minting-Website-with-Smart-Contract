@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import Web3 from 'web3';
 
 const { abi } = require("../contracts/FathomyachtClub.json");
-const contractAddress = '0xd076900D9c5537d5F8886162Aba8900F506fD768';
+const contractAddress = '0xAf126a88B10806A5977B9d760aC2c7E4005A817d';
 
 export default function Location() {
     const [myTokens, setMyTokens] = useState([]);
