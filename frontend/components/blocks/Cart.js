@@ -6,7 +6,7 @@ import Web3 from 'web3';
 
 export default function Cart({ memberShip }) {
     const { abi } = require("../../contracts/FathomyachtClub.json");
-    const contractAddress = '0xE428B8858E410144A8D40fa29E7DB741cFa8C060';
+    const contractAddress = '0x5786Bf80E582c36fa5994024552BbaA29EB2d9F7';
 
     const [loading, setLoading] = useState(false);
     const [minted, setMinted] = useState(false);

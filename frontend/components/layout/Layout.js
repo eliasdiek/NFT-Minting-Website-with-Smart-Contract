@@ -8,22 +8,32 @@ const headerMenu = [
     {
         title: 'Home',
         link: '/',
-        active: true
+        active: true,
+        desktop: true
     },
     {
         title: 'About',
         link: '/about',
-        active: false
+        active: false,
+        desktop: true
     },
     {
         title: 'Locations',
         link: '/locations',
-        active: false
+        active: false,
+        desktop: true
     },
     {
         title: 'Contact',
         link: '/contact',
-        active: false
+        active: false,
+        desktop: true
+    },
+    {
+        title: 'My Collections',
+        link: '/account/collections',
+        active: false,
+        desktop: false
     }
 ];
 

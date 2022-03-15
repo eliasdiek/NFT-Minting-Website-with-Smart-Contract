@@ -13,7 +13,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
   uint256 private MAX_TOKEN = 10000;
-  uint256 private MAX_MINTABLE_LIMIT = 1000;
 
   // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
   mapping(uint256 => uint8) private _tokenToTier;
@@ -100,14 +99,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
 
   function setMaxLimit(uint256 limit) external onlyOwner {
     MAX_TOKEN = limit;
-  }
-
-  function getMaxMintableLimit() external view returns(uint256) {
-    return MAX_MINTABLE_LIMIT;
-  }
-
-  function setMaxMintableLimit(uint256 limit) external onlyOwner {
-    MAX_MINTABLE_LIMIT = limit;
   }
 
   function getTierLimit(uint8 tierNumber) external view returns(uint256) {
@@ -200,8 +191,9 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       _mint(msg.sender, newItemId);
       _tokenToTier[newItemId] = tierNumber;
       setTokenURI(newItemId, getTokenURI(newItemId));
-      tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
     }
+
+    tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
 
     return newItemId;
   }
