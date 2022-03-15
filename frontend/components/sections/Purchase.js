@@ -11,7 +11,7 @@ import Web3 from 'web3';
 import axios from 'axios';
 
 const { abi } = require("../../contracts/FathomyachtClub.json");
-const contractAddress = '0x72363A6192d7e891c8636a349c90975569B0745c';
+const contractAddress = '0xE428B8858E410144A8D40fa29E7DB741cFa8C060';
 
 const MAX_MINTABLE = 2;
 
@@ -19,19 +19,19 @@ const initialTiers = [
     {
         tierNumber: 0,
         name: 'Power',
-        usdPrice: 50,
+        usdPrice: 51,
         ethPrice: 0
     },
     {
         tierNumber: 1,
         name: 'Yacht',
-        usdPrice: 100,
+        usdPrice: 101,
         ethPrice: 0
     },
     {
         tierNumber: 2,
         name: 'Prestige',
-        usdPrice: 150,
+        usdPrice: 151,
         ethPrice: 0
     }
 ];

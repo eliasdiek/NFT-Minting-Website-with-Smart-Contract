@@ -171,7 +171,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     _setTokenURI(number, tokenURI);
   }
 
-  function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(string memory) {
+  function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(uint256) {
     require(msg.value >= ((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLatestPrice()), string(abi.encodePacked(uint2str(((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLocalPrice())), " :Amount of ether sent not correct.")));
 
     // refund the remainder
@@ -190,8 +190,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     }
     require(tierMintCounter[tierNumber] + number < tierMintLimit[tierNumber], "Overflow maximum mint limitation.");
 
-    tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
-
     uint256 newItemId = 0;
     // set where start the tokenIds to be incremented
     _tokenIds.set(_tokenIdRange[tierNumber] + _preSaleMintCounter[tierNumber] + _publicSaleMintCounter[tierNumber]);
@@ -202,9 +200,10 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       _mint(msg.sender, newItemId);
       _tokenToTier[newItemId] = tierNumber;
       setTokenURI(newItemId, getTokenURI(newItemId));
+      tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
     }
 
-    return 'success';
+    return newItemId;
   }
 
   function totalSupply() public view returns(uint256) {
@@ -213,7 +212,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       total += (_preSaleMintCounter[i] + _publicSaleMintCounter[i]);
     }
     
-    return total;
+    return _tokenIds.current();
   }
 
   function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981) returns (bool) {
