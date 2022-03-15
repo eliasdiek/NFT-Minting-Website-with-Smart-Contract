@@ -137,7 +137,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   }
 
   function getTokenURI(uint256 _tokenId) public view returns(string memory) {
-    return string(abi.encodePacked(_tokenBatchURI, uint2str(_tokenId)));
+    return string(abi.encodePacked(_tokenBatchURI, '/', uint2str(_tokenId)));
   }
 
   function setTokenBatchURI(string memory _batchTokenURI) external onlyOwner {
