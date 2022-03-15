@@ -39,6 +39,7 @@ export default function Header({ headerMenu }) {
     const logout = (e) => {
         e.preventDefault();
         if (active) deactivate();
+        router.push('/');
         dispatch(removeWalletAddress());
     }
 

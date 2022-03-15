@@ -6,13 +6,13 @@ import { useSelector } from 'react-redux';
 import Web3 from 'web3';
 
 const { abi } = require("../contracts/FathomyachtClub.json");
-const contractAddress = '0x5786Bf80E582c36fa5994024552BbaA29EB2d9F7';
+const contractAddress = '0xd076900D9c5537d5F8886162Aba8900F506fD768';
 
 export default function Location() {
     const [myTokens, setMyTokens] = useState([]);
     const [loading, setLoading] = useState(false);
     const walletAddr = useSelector((state) => state.address);
-    const router = useRouter();
+    // const router = useRouter();
 
     const getTokens = async () => {
         try {
@@ -20,7 +20,7 @@ export default function Location() {
             const { ethereum } = window;
             var w3 = new Web3(ethereum);
             var contract_abi = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(contractAddress));
-            const tokens = w3.utils.fromWei(await contract_abi.methods.getTokensOfHolder(walletAddr).call());
+            const tokens = await contract_abi.methods.getTokensOfHolder(walletAddr).call();
             console.log('[tokens]', tokens);
             setLoading(false);
             setMyTokens(tokens);
@@ -30,21 +30,13 @@ export default function Location() {
         }
     }
 
+    // useEffect(() => {
+    //     if (walletAddr === "" || walletAddr === undefined || walletAddr === null) router.push('/');
+    // }, [walletAddr]);
+
     useEffect(() => {
-        if (walletAddr === "" || walletAddr === undefined || walletAddr === null) router.push('/');
+        if (walletAddr) getTokens();
     }, [walletAddr]);
-
-    useEffect(() => {
-        getTokens();
-    }, []);
-
-    if (loading) return (
-        <React.Fragment>
-            <div className="container flex items-center justify-center">
-                <span className="block animate-spin bg-transparent border-3 border-t-primary rounded-full h-10 w-10"></span>
-            </div>
-        </React.Fragment>
-    );
 
     return (
         <React.Fragment>
@@ -60,9 +52,19 @@ export default function Location() {
                     </div>
                 </section>
 
-                <section>
-                    <Collection tokens={myTokens} />
-                </section>
+                {
+                    loading ? (
+                        <React.Fragment>
+                            <div className="container flex items-center justify-center p-28">
+                                <span className="block animate-spin bg-transparent border-3 border-t-primary rounded-full h-10 w-10"></span>
+                            </div>
+                        </React.Fragment>
+                    ) : (
+                        <section>
+                            <Collection tokens={myTokens} />
+                        </section>
+                    ) 
+                }
             </main>
         </React.Fragment>
     );

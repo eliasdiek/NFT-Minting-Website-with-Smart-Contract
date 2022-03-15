@@ -43,8 +43,8 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
     require(MAX_TOKEN > number + totalSupply() + 1, "Not enough tokens left to buy.");
 
-    // uint8 blockStatus = checkBlock(msg.sender);
-    uint8 blockStatus = 1;
+    uint8 blockStatus = checkBlock(msg.sender);
+    // uint8 blockStatus = 1;
     require(blockStatus > 0, "Not available to mint.");
     _;
   }
@@ -166,11 +166,11 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   }
 
   function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(uint256) {
-    require(msg.value >= ((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLocalPrice()), "Amount of ether sent not correct.");
+    require(msg.value >= ((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLatestPrice()), "Amount of ether sent not correct.");
 
     // refund the remainder
     address payable tgt = payable(msg.sender);
-    (bool success1, ) = tgt.call{ value: msg.value - (((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLocalPrice())) }("");
+    (bool success1, ) = tgt.call{ value: msg.value - (((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLatestPrice())) }("");
     require(success1, "Failed to refund");
 
     uint256[] storage tierMintLimit = PRESALE_TIER_MINT_LIMIT;
