@@ -65,7 +65,10 @@ export default function Locations() {
     }
 
 	const handleClickAway = () => {
-		setOpenMenu(false);
+        const width = window.innerWidth;
+        if (width < 768) {
+            setOpenMenu(false);
+        }
 	};
 
     const scrollTo = (e, id) => {
@@ -142,7 +145,7 @@ export default function Locations() {
                     return (
                         <div className={`flex flex-col ${ index % 2 == 1 ? 'sm:flex-row-reverse' : 'sm:flex-row' }`} id={location.name.toLocaleLowerCase()} key={index}>
                             <div className="w-full sm:w-1/2 image-block">
-                                <Image src={`/images/${location.image}`} className="w-full h-full block" width={1000} height={565} />
+                                <Image src={`/images/${location.image}`} className="w-full h-full block" width={1000} height={565} alt={location.name} />
                             </div>
                             <div className="w-full sm:w-1/2 py-8 px-12">
                                 <h2 className="mb-2 font-muli text-3xxl font-semibold text-center text-copy-dark">{ location.name }</h2>
@@ -163,7 +166,7 @@ export default function Locations() {
                             return (
                                 <div className="relative mt-8" key={index}>
                                     <div className="image-block">
-                                        <Image src={`/images/${item.image}`} className="w-full h-full block" width={400} height={220} />
+                                        <Image src={`/images/${item.image}`} className="w-full h-full block" width={400} height={220} alt={item.name} />
                                     </div>
                                     <div className="absolute bg-background-overlay top-0 z-10 w-full h-full flex items-center justify-center">
                                         <h4 className="text-3xl font-medium text-white copy-shadow-sm">{ item.name }</h4>

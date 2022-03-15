@@ -135,14 +135,12 @@ export default function WalletConnection() {
 
     useEffect(() => {
         if (active) {
-            console.log('[chainId]', chainId);
-
             setIsOpen(false);
             setWalletAddr(account);
             getBalance(account);
             dispatch(setWalletAddress(account));
         }
-    }, [active]);
+    }, [active, account, dispatch]);
 
     return (
         <div className="w-full">

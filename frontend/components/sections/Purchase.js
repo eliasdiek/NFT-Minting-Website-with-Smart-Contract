@@ -48,7 +48,15 @@ export default function Purchase() {
     const walletAddr = useSelector((state) => state.address);
     const cart = useSelector((state) => state.cart);
 
-    async function init() {
+    function init() {
+        getEthPrice();
+
+        setInterval(() => {
+            getEthPrice();
+        }, 30 * 60 * 1000);
+    }
+
+    const getEthPrice = async () => {
         try {
             let result = await axios.get('/api/coinmarketcap');
 
@@ -135,14 +143,9 @@ export default function Purchase() {
 
     useEffect(() => {
         init();
-
-        setInterval(() => {
-            init();
-        }, 30 * 60 * 1000); // fetch & set the ether price in every 5 minutes
     }, []);
 
     useEffect(() => {
-        console.log('router]', router.query?.membership)
         if (walletAddr) getBalance(walletAddr);
     }, [walletAddr]);
 
@@ -165,7 +168,7 @@ export default function Purchase() {
                 <div className="bg-white rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 px-2 py-4 sm:py-2">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="image-block">
-                            <Image src={`/tokens/Power/images/08001.png`} className="block" width={600} height={600} />
+                            <Image src={`/tokens/Power/images/08001.png`} className="block" width={600} height={600} alt="Token image" />
                         </div>
 
                         <div className="px-5">

@@ -60,7 +60,7 @@ export default function Layout(props) {
 
     useEffect(() => {
         dispatch(init());
-    }, []);  
+    }, [dispatch]);  
     
     return (
         <React.Fragment>

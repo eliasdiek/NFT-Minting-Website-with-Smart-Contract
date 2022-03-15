@@ -107,7 +107,7 @@ export default function WalletConnector({ isOpen, closeModal, wallets, activate,
                                     as={Fragment}
                                 >
                                     <div className="py-2">
-                                        <p className="text-sm text-copy-darker">Wallets are used to send, receive, and store digital assets like Ether. Wallets come in many forms. They are either built into your browser, an extension added to your browser, a piece of hardware plugged into your computer or even an app on your phone. For more information about wallets, see <a href="https://docs.ethhub.io/using-ethereum/wallets/intro-to-ethereum-wallets/" className="text-primary" target="_blank">this explanation</a>.</p>
+                                        <p className="text-sm text-copy-darker">Wallets are used to send, receive, and store digital assets like Ether. Wallets come in many forms. They are either built into your browser, an extension added to your browser, a piece of hardware plugged into your computer or even an app on your phone. For more information about wallets, see <a href="https://docs.ethhub.io/using-ethereum/wallets/intro-to-ethereum-wallets/" className="text-primary" target="_blank" rel="noreferrer">this explanation</a>.</p>
                                     </div>
                                 </Transition>
                             </div>

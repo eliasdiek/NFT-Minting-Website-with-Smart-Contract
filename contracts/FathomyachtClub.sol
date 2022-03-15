@@ -2,17 +2,14 @@
 pragma solidity >=0.8.9 <0.9.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-// import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./IAggregatorV3.sol";
-import "./Counters.sol";
 
 contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
-  using Counters for Counters.Counter;
-  Counters.Counter private _tokenIds;
   uint256 private MAX_TOKEN = 10000;
+  uint256[] private _tokenIds = [8000, 0, 2000, 4000, 6000];
 
   // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
   mapping(uint256 => uint8) private _tokenToTier;
@@ -21,7 +18,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   uint256[] private NFT_PRICE = [50, 100, 150, 0, 0];
   uint256[] private PRESALE_TIER_MINT_LIMIT = [100, 100, 50, 0, 0];
   uint256[] private PUBLIC_SALE_TIER_MINT_LIMIT = [900, 900, 950, 0, 0];
-  uint256[] private _tokenIdRange = [8000, 0, 2000, 4000, 6000];
   string private _tokenBatchURI = "https://gateway.pinata.cloud/ipfs/QmSSGFwHzneUFom4taWhMv1MNYNrGUFFQB3VU8rgWZrFNX";
   // 0: presale start block, 1: public sale start block
   uint256[] private EVENT_BLOCK = [10264904, 10437473];
@@ -31,6 +27,8 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   mapping(uint8 => uint256) private _publicSaleMintCounter;
   // Mapping from address to white list flag(1: added, 0: removed)
   mapping(address => uint8) private _whitelister;
+  // Mapping that returns tokens array of a holder
+  mapping(address => uint256[]) private _tokensOfholder;
 
   AggregatorV3Interface internal priceFeed;
 
@@ -45,7 +43,8 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
     require(MAX_TOKEN > number + totalSupply() + 1, "Not enough tokens left to buy.");
 
-    uint8 blockStatus = checkBlock(msg.sender);
+    // uint8 blockStatus = checkBlock(msg.sender);
+    uint8 blockStatus = 1;
     require(blockStatus > 0, "Not available to mint.");
     _;
   }
@@ -70,6 +69,10 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     for(uint256 i=0; i<new_len; i++) {
       _whitelister[lsts[i]] = 1;
     }
+  }
+
+  function getTokensOfHolder(address holder_address) external view returns(uint256[] memory) {
+    return _tokensOfholder[holder_address];
   }
 
   function removeWhiteList(address[] memory lsts) public onlyOwner {
@@ -163,11 +166,11 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   }
 
   function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(uint256) {
-    require(msg.value >= ((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLatestPrice()), string(abi.encodePacked(uint2str(((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLocalPrice())), " :Amount of ether sent not correct.")));
+    require(msg.value >= ((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLocalPrice()), "Amount of ether sent not correct.");
 
     // refund the remainder
     address payable tgt = payable(msg.sender);
-    (bool success1, ) = tgt.call{ value: msg.value - (((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLatestPrice())) }("");
+    (bool success1, ) = tgt.call{ value: msg.value - (((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLocalPrice())) }("");
     require(success1, "Failed to refund");
 
     uint256[] storage tierMintLimit = PRESALE_TIER_MINT_LIMIT;
@@ -183,14 +186,14 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
 
     uint256 newItemId = 0;
     // set where start the tokenIds to be incremented
-    _tokenIds.set(_tokenIdRange[tierNumber] + _preSaleMintCounter[tierNumber] + _publicSaleMintCounter[tierNumber]);
 
     for (uint256 i = 0; i < number; i++) {
-      _tokenIds.increment();
-      newItemId = _tokenIds.current();
+      _tokenIds[tierNumber]++;
+      newItemId = _tokenIds[tierNumber];
       _mint(msg.sender, newItemId);
       _tokenToTier[newItemId] = tierNumber;
-      setTokenURI(newItemId, getTokenURI(newItemId));
+      _tokensOfholder[msg.sender].push(newItemId);
+      _setTokenURI(newItemId, getTokenURI(newItemId));
     }
 
     tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;

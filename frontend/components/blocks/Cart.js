@@ -60,6 +60,7 @@ export default function Cart({ memberShip }) {
 
     async function getTierPrice() {
         const tierNumber = 2;
+        const { ethereum } = window;
         var w3 = new Web3(ethereum);
         var contract_abi = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(contractAddress));
         const tierPrice = w3.utils.fromWei(await contract_abi.methods.getTierPrice(tierNumber).call());
@@ -69,6 +70,7 @@ export default function Cart({ memberShip }) {
     }
 
     async function getTotalSupply() {
+        const { ethereum } = window;
         var w3 = new Web3(ethereum);
         var contract_abi = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(contractAddress));
         const totalSupply = await contract_abi.methods.totalSupply().call();

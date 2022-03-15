@@ -185,7 +185,7 @@ export default function Home() {
                 <button className="uppercase bg-gradient-to-br from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold">Coming Soon</button>
               </div>
               <div className="w-full sm:w-1/2 sm:pl-2">
-                <Image src="/images/hero-banner.jpg" className="w-full h-full" width={1600} height={1067} />
+                <Image src="/images/hero-banner.jpg" className="w-full h-full" width={1600} height={1067} alt="Homepage banner" />
               </div>
             </div>
           </div>

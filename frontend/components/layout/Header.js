@@ -24,7 +24,7 @@ export default function Header({ headerMenu }) {
     }
 
     function goToCollection() {
-        router.push('/account/collection');
+        router.push('/collection');
     }
 
 	const handleClickAway = () => {

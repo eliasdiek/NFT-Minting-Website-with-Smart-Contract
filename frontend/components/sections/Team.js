@@ -38,7 +38,7 @@ export default function Team() {
                         return (
                             <div className="p-2" key={index}>
                                 <div className="image-block w-full flex items-center justify-center text-center mb-4">
-                                    <Image src={`/images/${member.image}`} className="block" layout="fixed" width={180} height={180} />
+                                    <Image src={`/images/${member.image}`} className="block" layout="fixed" width={180} height={180} alt={member.name} />
                                 </div>
                                 <h4 className="font-pop font-medium text-center text-copy-dark mb-4">{ member.name }</h4>
                                 <p className="font-light text-gray-500 mb-2 text-center">{ member.role }</p>
