@@ -59,9 +59,9 @@ export default function Purchase() {
 
     const getEthPrice = async () => {
         try {
-            let result = await axios.get('/api/coinmarketcap');
+            let result = await axios.get('https://api.coincap.io/v2/assets?ids=ethereum');
 
-            const ethPrice = result.data.eth;
+            const ethPrice = result.data?.data[0]?.priceUsd;
             const _tiers = tiers.map(tier => {
                 tier.ethPrice = parseFloat(tier.usdPrice / ethPrice).toFixed(4);
 
