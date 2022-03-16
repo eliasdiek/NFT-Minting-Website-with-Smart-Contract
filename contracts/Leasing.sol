@@ -15,12 +15,11 @@ interface IFYC is IERC721 {
 contract Leasing is Ownable {
     event ApproveLeasing(uint tokenId);
     
-    IERC20 _weth;
+    IERC20 _weth = IERC20(0xc778417E063141139Fce010982780140Aa0cD5Ab);
     IFYC _nft;
     uint8 private _refundPercentFee = 98;
 
     struct LeaseOffer {
-        _weth = IERC20(0xc778417E063141139Fce010982780140Aa0cD5Ab);
         address from;
         uint256 price;
         uint32 expiresIn;
@@ -112,7 +111,7 @@ contract Leasing is Ownable {
                 bool success1 = trasferWeth(_from, address(_nft.ownerOf(_tokenId)), (tokenLeaseOffers[i].price * 9) / 10);
                 require(success1, "Failed to Pay Royalty fee");
                 // transfer royalty fee from lease offer maker to royalty receiver
-                bool success2 = trasferWeth(_from, _royaltyReceiver, roaltyAmount);
+                bool success2 = trasferWeth(_from, royaltyReceiver, roaltyAmount);
                 require(success2, "Failed to Pay Royalty fee");
                 
                 _lease[_tokenId] = tokenLeaseOffers[i];
