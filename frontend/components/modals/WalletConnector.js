@@ -3,18 +3,27 @@ import { Fragment, useState } from 'react'
 import { Wallet, Times } from '../icons';
 
 
-export default function WalletConnector({ isOpen, closeModal, wallets, activate, onSetWalletId }) {
+export default function WalletConnector({ isOpen, closeModal, wallets, activate, onSetWalletId, openMetamaskModal }) {
     const [openLearn, setOpenLearn] = useState(false);
 
     async function onWalletSelect(action, index) {
         try {
-            await activate(action);
+            if (typeof window == undefined) return false;
+
+            const { ethereum } = window;
+            if (!ethereum && index === 0) {
+                openMetamaskModal();
+                return false;
+            }
+            onSetWalletId(index);
+            const data = await activate(action);
+            console.log('[onWalletSelect]', data);
         }
         catch(err) {
             console.log('[wallet connector]', err);
         }
 
-        onSetWalletId(index);
+        
     }
 
     return (

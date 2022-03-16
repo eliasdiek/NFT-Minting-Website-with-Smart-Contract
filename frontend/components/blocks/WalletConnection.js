@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import WalletConnector from '../modals/WalletConnector';
+import Modal from '../modals/Modal';
 import WalletInfo from './WalletInfo';
 import Button from '../buttons/Button';
 import { WalletLinkConnector } from "@web3-react/walletlink-connector";
@@ -52,30 +53,9 @@ const wallets = [
     },
 ];
 
-export const useBalance = async () => {
-    const walletAddr = useSelector((state) => state.address);
-
-    async function getBalance(addr) {
-        if (window == undefined) return false;
-
-        const { ethereum } = window;
-        var web3 = new Web3(ethereum);
-        const wei =  await web3.eth.getBalance(addr);
-        const balance = web3.utils.fromWei(wei);
-
-        return balance;
-    }
-
-    const balance = walletAddr ? await getBalance(walletAddr) : 0;
-
-    return {
-        walletAddr,
-        balance
-    };
-};
-
 export default function WalletConnection() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isOpenMetamask, setIsOpenMetamask] = useState(false);
     const [balance, setBalance] = useState(0);
     const { activate, deactivate } = useWeb3React();
     const [walletAddr, setWalletAddr] = useState();
@@ -99,32 +79,36 @@ export default function WalletConnection() {
     }
 
     async function walletDisconnect() {
-        if (activate) await deactivate();
-        setWalletAddr('');
-        dispatch(removeWalletAddress());
+        try {
+            if (activate) await deactivate();
+            setWalletAddr('');
+            dispatch(removeWalletAddress());
+        }
+        catch (err) {
+            console.log('[err]', err);
+        }
     }
 
     async function getBalance(addr) {
-        if (window == undefined) return false;
+        try {
+            if (typeof window == undefined) return false;
 
-        const { ethereum } = window;
-        var web3 = new Web3(ethereum);
-        const wei =  await web3.eth.getBalance(addr);
-        const balance = web3.utils.fromWei(wei);
-
-        setBalance(balance);
+            const { ethereum } = window;
+            if (!ethereum) return;
+            var web3 = new Web3(ethereum);
+            const wei =  await web3.eth.getBalance(addr);
+            const balance = web3.utils.fromWei(wei);
+    
+            setBalance(balance);
+        }
+        catch (err) {
+            console.log('[err]', err);
+        }
     }
 
-    const mint = () => {
-        const { ethereum } = window;
-
-        ethereum.request({ method: "eth_requestAccounts" }).then((accounts) => {
-            console.log(accounts)
-            console.log(abi)
-            var w3 = new Web3(ethereum)
-            var contract_abi = new w3.eth.Contract(abi, "0x6b28D74A819e113cdB9067190B2cF463061e38b8")
-            contract_abi.methods.mintBatch("1").send({from: accounts[0], value: w3.utils.toWei("0.01")}).then(() => {})
-        }).catch((err) => console.log(err));
+    const openMetamaskModal = () => {
+        closeModal();
+        setIsOpenMetamask(true);
     }
 
     useEffect(() => {
@@ -146,7 +130,7 @@ export default function WalletConnection() {
     return (
         <div className="w-full">
             {
-                active || walletAddr ? (
+                (active || walletAddr) && typeof walletId !== undefined ? (
                     <WalletInfo
                      walletName={wallets[walletId].name}
                      walletIcon={wallets[walletId].icon}
@@ -169,7 +153,27 @@ export default function WalletConnection() {
              activate={activate}
              wallets={wallets}
              onSetWalletId={onSetWalletId}
+             openMetamaskModal={openMetamaskModal}
             />
+
+            <Modal isOpen={isOpenMetamask} openModal={() => { setIsOpenMetamask(true) }} closeModal={() => { setIsOpenMetamask(false) }}>
+                <div className="px-8">
+                    <div className="flex flex-col items-center justify-center mb-8">
+                        <div className="flex items-center justify-center py-2">
+                            <Metamask />
+                        </div>
+                        <h4 className="ml-2 text-xl">Try the Metamask Wallet extension</h4>
+                    </div>
+                    <div className="py-4 text-center">
+                        <a
+                         href="https://metamask.app.link/dapp/fathomyachtclub.com" target="_blank" rel="noreferrer"
+                         className="bg-primary rounded-md py-3 px-8 text-white text-base"
+                        >
+                            Install
+                        </a>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

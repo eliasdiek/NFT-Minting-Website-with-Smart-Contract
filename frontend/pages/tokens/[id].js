@@ -77,7 +77,7 @@ export default function Location() {
                     ) 
                 }
 
-                <Modal isOpen={isModalOpen} openModal={openModal} closeModal={closeModal}>
+                <Modal isOpen={isModalOpen} openModal={openModal} closeModal={closeModal} title="Hey, this is title">
                     Hey, modal!
                 </Modal>
             </main>

@@ -23,6 +23,8 @@ export default function MemberShip({ memberShips }) {
         if (window == undefined) return false;
 
         const { ethereum } = window;
+        if (!ethereum) return false;
+        
         var web3 = new Web3(ethereum);
         const wei =  await web3.eth.getBalance(addr);
         const balance = web3.utils.fromWei(wei);
