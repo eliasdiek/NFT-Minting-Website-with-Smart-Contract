@@ -11,7 +11,7 @@ function truncate(string) {
     return input.substr(0, 6) + '...' + input.substr(input.length - 4);
 }
 
-export default function TokenDetail({ metaData, leaseHandler }) {
+export default function TokenDetail({ metaData, openLeaseModal }) {
     return (
         <div className="container p-4 md:p-8">
             <div className="block md:flex md:pt-12 relative">
@@ -23,7 +23,7 @@ export default function TokenDetail({ metaData, leaseHandler }) {
                         <div className="flex items-center justify-between p-2">
                             <Ether />
                         </div>
-                        <div className="image-block responsive">
+                        <div className="image-block responsive md:min-w-96">
                             <Image src={metaData.image} width="384" height="384" layout="fixed" className="!w-fill" alt={metaData.name} />
                         </div>
                     </div>
@@ -100,7 +100,7 @@ export default function TokenDetail({ metaData, leaseHandler }) {
                         <Button
                             theme="primary"
                             className="w-auto capitalize !py-2"
-                            onClick={() => leaseHandler(metaData.tokenId)}
+                            onClick={() => openLeaseModal(metaData.tokenId)}
                         >
                             Lease
                         </Button>

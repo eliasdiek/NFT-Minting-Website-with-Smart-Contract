@@ -44,7 +44,7 @@ export default function MyModal(props) {
                 <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
                     <Dialog.Title as="div" className={`flex items-center ${props.title ? 'justify-between' : 'justify-end'}`}>
                         { props.title && <div className="flex">
-                            <h4 className="text-xxl ml-2 text-center">{props.title}</h4>
+                            <h4 className="text-xxl text-center">{props.title}</h4>
                         </div> }
                         <div>
                             <button className="rounded-full p-2 hover:bg-gray-200" onClick={props.closeModal}>

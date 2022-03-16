@@ -42,6 +42,10 @@ module.exports = {
         '1px': '1px',
         '2px': '2px',
         '3px': '3px'
+      },
+      minWidth: {
+        '80': '320px',
+        '96': '384px',
       }
     },
     fontFamily: {

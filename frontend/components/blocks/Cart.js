@@ -60,17 +60,6 @@ export default function Cart({ memberShip }) {
         }
     }
 
-    async function getTierPrice() {
-        const tierNumber = 2;
-        const { ethereum } = window;
-        var w3 = new Web3(ethereum);
-        var contract_abi = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(contractAddress));
-        const tierPrice = w3.utils.fromWei(await contract_abi.methods.getTierPrice(tierNumber).call());
-        console.log('[tierPrice]', tierPrice);
-
-        return tierPrice;
-    }
-
     async function getTotalSupply() {
         const { ethereum } = window;
         var w3 = new Web3(ethereum);
@@ -115,7 +104,7 @@ export default function Cart({ memberShip }) {
 
     return (
         <div className="p-4 border rounded-xl border-gray-200">
-            <h2 className="font-light text-3xl py-2 mb-4 font-muli" onClick={getTotalSupply}>Checkout</h2>
+            <h2 className="font-light text-3xl py-2 mb-4 font-muli">Checkout</h2>
             <div className="py-2">
                 <h4 className="font-medium mb-4">Please review your order selection</h4>
 
