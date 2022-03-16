@@ -227,23 +227,9 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   }
 
   function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
-    string memory prefix = '';
     if (_i == 0) {
       return "0";
     }
-    else if (_i > 0 && _i < 10) {
-      prefix = '0000';
-    }
-    else if (_i >= 10 && _i < 100) {
-      prefix = '000';
-    }
-    else if (_i >= 100 && _i < 1000) {
-      prefix = '00';
-    }
-    else if (_i >= 1000 && _i < 10000) {
-      prefix = '0';
-    }
-
     uint j = _i;
     uint len;
     while (j != 0) {
@@ -259,7 +245,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       bstr[k] = b1;
       _i /= 10;
     }
-
-    return string(abi.encodePacked(prefix, string(bstr)));
+    
+    return string(bstr);
   }
 }

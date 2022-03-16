@@ -17,7 +17,7 @@ export default function Location() {
     const [loading, setLoading] = useState(false);
     const walletAddr = useSelector((state) => state.address);
     const router = useRouter();
-    const { id } = router.query
+    const { id } = router.query;
 
     const getMetaData = async () => {
         try {
