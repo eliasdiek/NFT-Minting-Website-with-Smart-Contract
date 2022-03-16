@@ -22,8 +22,6 @@ export default function WalletConnector({ isOpen, closeModal, wallets, activate,
         catch(err) {
             console.log('[wallet connector]', err);
         }
-
-        
     }
 
     return (

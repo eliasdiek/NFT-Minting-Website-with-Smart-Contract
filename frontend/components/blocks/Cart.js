@@ -11,6 +11,7 @@ export default function Cart({ memberShip }) {
 
     const [loading, setLoading] = useState(false);
     const [minted, setMinted] = useState(false);
+    const [cartTotal, setCartTotal] = useState(0);
     const cart = useSelector((state) => state.cart);
     const dispatch = useDispatch();
 
@@ -102,7 +103,14 @@ export default function Cart({ memberShip }) {
 
     useEffect(() => {
         console.log('[cart]', cart);
-        if (cart.length > 0) setMinted(false);
+        if (cart.length > 0) {
+            setMinted(false);
+            const cartValue = 0;
+            cart.forEach(item => {
+                cartValue += parseFloat(item.price) * item.qty;
+            });
+            setCartTotal(cartValue);
+        };
     }, [cart]);
 
     return (
@@ -152,15 +160,15 @@ export default function Cart({ memberShip }) {
                         <div className="w-full lg:w-1/3">
                             <div className="py-4 flex items-center justify-between">
                                 <span>Subtotal</span>
-                                <span>0.0 ETH</span>
+                                <span>{cartTotal} ETH</span>
                             </div>
                             <div className="py-4 flex items-center justify-between">
                                 <span>Gas*</span>
-                                <span>0.00000029 ETH</span>
+                                <span>{ 0.014 * cart.length } ETH</span>
                             </div>
                             <div className="border-t border-gray-300 font-medium py-4 flex items-center justify-between">
                                 <span>Total</span>
-                                <span>0.00000029 ETH</span>
+                                <span>{ cartTotal + 0.014 * cart.length } ETH</span>
                             </div>
                         </div>
                     </div>
