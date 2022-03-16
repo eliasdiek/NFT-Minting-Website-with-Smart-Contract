@@ -52,3 +52,14 @@ footer {
 .image-block span {
     display: block !important;
 }
+@media screen and (max-width: 768px) {
+    .responsive.image-block span {
+        width: auto !important;
+        height: auto !important;
+    }
+    .responsive.image-block img {
+        position: relative !important;
+        width: auto !important;
+        height: auto !important;
+    }
+}

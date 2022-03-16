@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import WalletConnector from '../modals/WalletConnector';
 import WalletInfo from './WalletInfo';
+import Button from '../buttons/Button';
 import { WalletLinkConnector } from "@web3-react/walletlink-connector";
 import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
 import { InjectedConnector } from "@web3-react/injected-connector";
@@ -155,7 +156,9 @@ export default function WalletConnection() {
                     />
                 ) : (
                     <div className="p-4 text-center mt-8">
-                        <button className="rounded-full text-xl py-4 px-12 bg-background-primary text-white font-semibold" onClick={openModal}>Connect Wallet To Begin</button>
+                        <Button theme="secondary" className="w-auto m-auto" onClick={openModal}>
+                            Connect Wallet To Begin
+                        </Button>
                     </div>
                 )
             }

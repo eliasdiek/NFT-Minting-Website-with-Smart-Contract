@@ -1,8 +1,9 @@
 import React from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import MemberShip from '../components/tables/MemberShip';
+import MemberShip from '../components/sections/MemberShip';
 import Newsletter from '../components/sections/Newsletter';
+import Button from '../components/buttons/Button';
 
 const memberShips = [
   {
@@ -182,7 +183,7 @@ export default function Home() {
                 <h1 className="text-primary font-semibold font-muli text-6xl py-4 mb-4">NFT Yacht Club</h1>
                 <p className="text-black text-xl font-light py-2 mb-8 leading-9">Fathom Yacht Club is one of the first decentralized Yacht and Social Clubs where membership is purchased through an NFT “token.” The token holder will have access to various social and VIP experiences in digital and physical spaces.</p>
 
-                <button className="uppercase bg-gradient-to-br from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold">Coming Soon</button>
+                <Button theme="primary" className="w-auto">Coming Soon</Button>
               </div>
               <div className="w-full sm:w-1/2 sm:pl-2">
                 <Image src="/images/hero-banner.jpg" className="w-full h-full" width={1600} height={1067} alt="Homepage banner" />

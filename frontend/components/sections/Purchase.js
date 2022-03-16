@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import QuantitySelector from '../inputs/QuantitySelector';
 import WalletConnection from '../blocks/WalletConnection';
 import Cart from '../blocks/Cart';
+import Button from '../buttons/Button';
 import { Ether } from '../icons';
 import { useSelector, useDispatch } from "react-redux";
 import { addToCart } from '../../store/actions';
@@ -11,7 +12,7 @@ import Web3 from 'web3';
 import axios from 'axios';
 
 const { abi } = require("../../contracts/FathomyachtClub.json");
-const contractAddress = '0xAf126a88B10806A5977B9d760aC2c7E4005A817d';
+const contractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
 
 const MAX_MINTABLE = 2;
 
@@ -19,19 +20,19 @@ const initialTiers = [
     {
         tierNumber: 0,
         name: 'Power',
-        usdPrice: 51,
+        usdPrice: 55,
         ethPrice: 0
     },
     {
         tierNumber: 1,
         name: 'Yacht',
-        usdPrice: 101,
+        usdPrice: 105,
         ethPrice: 0
     },
     {
         tierNumber: 2,
         name: 'Prestige',
-        usdPrice: 151,
+        usdPrice: 155,
         ethPrice: 0
     }
 ];
@@ -208,13 +209,14 @@ export default function Purchase() {
                             </div>
 
                             <div className="flex justify-between items-center">
-                                <button
-                                    className={`w-full uppercase bg-gradient-to-br from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold ${walletAddr && balance && qty > 0 && ethPrice ? 'opacity-1' : 'opacity-50 cursor-not-allowed'}`}
+                                <Button
+                                    className={`${walletAddr && balance && qty > 0 && ethPrice ? 'opacity-1' : 'opacity-50 cursor-not-allowed'}`}
                                     disabled={walletAddr && balance && qty > 0 && ethPrice > 0 ? false :  true}
                                     onClick={cartToAdd}
+                                    theme="primary"
                                 >
                                     Add to cart
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>

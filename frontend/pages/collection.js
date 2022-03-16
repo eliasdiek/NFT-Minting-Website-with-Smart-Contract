@@ -4,15 +4,17 @@ import { useRouter } from 'next/router';
 import Collection from '../components/sections/Collection';
 import { useSelector } from 'react-redux';
 import Web3 from 'web3';
+import axios from 'axios';
 
 const { abi } = require("../contracts/FathomyachtClub.json");
-const contractAddress = '0xAf126a88B10806A5977B9d760aC2c7E4005A817d';
+const contractAddress = '0xF16EB26739C290e83B7311C16596F3209890e5Fd';
+const tokenBatchURI = "https://gateway.pinata.cloud/ipfs/QmRgmtg7T8nL3iP81eg3gTWd6WHUjs75M4FzGYx9cthYCg";
 
 export default function Location() {
     const [myTokens, setMyTokens] = useState([]);
     const [loading, setLoading] = useState(false);
     const walletAddr = useSelector((state) => state.address);
-    // const router = useRouter();
+    const router = useRouter();
 
     const getTokens = async () => {
         try {
@@ -21,13 +23,44 @@ export default function Location() {
             var w3 = new Web3(ethereum);
             var contract_abi = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(contractAddress));
             const tokens = await contract_abi.methods.getTokensOfHolder(walletAddr).call();
-            console.log('[tokens]', tokens);
+            const metas = [];
+            for(let i = 0; i < tokens.length; i++) {
+
+                const metaData = await axios.get(tokenBatchURI + '/' + tokenIdToString(tokens[i]));
+                metas.push(metaData?.data);
+            }
+            console.log('[metas]', metas);
             setLoading(false);
-            setMyTokens(tokens);
+            setMyTokens(metas);
         }
         catch(err) {
             console.log('[err]', err);
         }
+    }
+
+    const tokenIdToString = (tokenId) => {
+        let prefix = '';
+        if (tokenId == 0) {
+          return "0";
+        }
+        else if (tokenId > 0 && tokenId < 10) {
+          prefix = '0000';
+        }
+        else if (tokenId >= 10 && tokenId < 100) {
+          prefix = '000';
+        }
+        else if (tokenId >= 100 && tokenId < 1000) {
+          prefix = '00';
+        }
+        else if (tokenId >= 1000 && tokenId < 10000) {
+          prefix = '0';
+        }
+
+        return prefix + String(tokenId);
+    }
+
+    const onTokenClick = (tokenId) => {
+        router.push('/tokens/' + tokenId);
     }
 
     // useEffect(() => {
@@ -61,7 +94,7 @@ export default function Location() {
                         </React.Fragment>
                     ) : (
                         <section>
-                            <Collection tokens={myTokens} />
+                            <Collection tokens={myTokens} onTokenClick={onTokenClick} />
                         </section>
                     ) 
                 }

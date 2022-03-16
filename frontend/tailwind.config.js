@@ -37,6 +37,11 @@ module.exports = {
       },
       borderWidth: {
         '3': '3px'
+      },
+      margin: {
+        '1px': '1px',
+        '2px': '2px',
+        '3px': '3px'
       }
     },
     fontFamily: {

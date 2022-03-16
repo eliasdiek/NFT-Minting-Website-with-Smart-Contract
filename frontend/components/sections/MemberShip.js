@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import WalletConnection from '../blocks/WalletConnection';
+import Button from '../buttons/Button';
 import { useSelector } from "react-redux";
 import Web3 from 'web3';
 
@@ -77,13 +78,14 @@ export default function MemberShip({ memberShips }) {
                                     }
                                     <div className="grid grid-cols-1">
                                         <div className="mb-0.5 flex items-center justify-center h-auto py-4 px-4 text-center">
-                                            <button
-                                                className={`w-full uppercase bg-gradient-to-br from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold ${walletAddr && balance > 0 ? 'opacity-1' : 'opacity-50 cursor-not-allowed'}`}
+                                            <Button
+                                                className={`${walletAddr && balance > 0 ? 'opacity-1' : 'opacity-50 cursor-not-allowed'}`}
+                                                theme="primary"
                                                 disabled={walletAddr && balance > 0 ? false :  true}
                                                 onClick={() => goToMemberShip(memberShip.name)}
                                             >
                                                 Buy now
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>

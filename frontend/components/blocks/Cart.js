@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Button from '../buttons/Button';
 import { useSelector, useDispatch } from 'react-redux';
 import { removeCartItem, clearCart } from '../../store/actions';
 import Web3 from 'web3';
 
 export default function Cart({ memberShip }) {
     const { abi } = require("../../contracts/FathomyachtClub.json");
-    const contractAddress = '0xAf126a88B10806A5977B9d760aC2c7E4005A817d';
+    const contractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
 
     const [loading, setLoading] = useState(false);
     const [minted, setMinted] = useState(false);
@@ -165,8 +166,9 @@ export default function Cart({ memberShip }) {
                     </div>
 
                     <div className="py-8 flex items-center justify-center">
-                        <button
-                         className={`flex items-center justify-center uppercase bg-gradient-to-br w-72 from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold focus:ring-4 ${cart.length == 0 ? 'opacity-50 cursor-not-allowed' : 'opacity-1'} ${loading && 'cursor-not-allowed' }`}
+                        <Button
+                         theme="primary"
+                         className={`w-72 h-12 text-center ${cart.length == 0 ? 'opacity-50 cursor-not-allowed' : 'opacity-1'} ${loading && 'cursor-not-allowed' }`}
                          disabled={loading || cart.length == 0 ? true :  false}
                          onClick={mintMatch}
                         >
@@ -174,7 +176,7 @@ export default function Cart({ memberShip }) {
                              className="block animate-spin bg-transparent border-3 border-b-white border-t-blue-400 rounded-full h-5 w-5 ..." viewBox="0 0 24 24"
                             ></span> : 
                             <span>Continue to Purchase</span> }
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import Head from 'next/head';
+import Button from '../components/buttons/Button';
 
 export default function Contact() {
     return (
@@ -28,7 +29,9 @@ export default function Contact() {
                                 <textarea type="message" id="message" name="message" className="w-full border border-gray-400 outline-none py-1 px-2 mt-3 h-72"></textarea>
                             </div>
                             <div className="my-6">
-                                <button className="rounded-full text-xl py-2 px-6 bg-background-primary text-white font-normal">Submit</button>
+                                <Button theme="secondary" className="text-xl py-2 px-6 w-auto capitalize font-thin">
+                                    Submit
+                                </Button>
                             </div>
                         </div>
                     </div>

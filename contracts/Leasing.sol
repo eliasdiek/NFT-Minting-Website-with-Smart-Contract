@@ -2,6 +2,7 @@
 pragma solidity >=0.8.9 <0.9.0;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 interface IFYC is IERC721 {
     function totalSupply() external view returns(uint256 number);
@@ -13,11 +14,13 @@ interface IFYC is IERC721 {
 
 contract Leasing is Ownable {
     event ApproveLeasing(uint tokenId);
-
+    
+    IERC20 _weth;
     IFYC _nft;
     uint8 private _refundPercentFee = 98;
 
     struct LeaseOffer {
+        _weth = IERC20(0xc778417E063141139Fce010982780140Aa0cD5Ab);
         address from;
         uint256 price;
         uint32 expiresIn;
@@ -94,15 +97,24 @@ contract Leasing is Ownable {
         return leaseOffers[_tokenId];
     }
 
+    function trasferWeth(address from, address to, uint256 amount) public returns(bool) {
+        return _weth.transferFrom(from, to, amount);
+    }
+
     function approveLeaseOffer(uint256 _tokenId, address _from) external onlyOwnerOf(_tokenId) {
         LeaseOffer[] memory tokenLeaseOffers = leaseOffers[_tokenId];
 
         for(uint256 i = 0; i < tokenLeaseOffers.length; i++) {
             if(tokenLeaseOffers[i].from == _from) {
                 (address royaltyReceiver, uint256 roaltyAmount) = getRoalityInfo(_tokenId, tokenLeaseOffers[i].price);
-                address payable _royaltyReceiver = payable(royaltyReceiver);
-                (bool success1, ) = _royaltyReceiver.call{ value: roaltyAmount }("");
+
+                // transfer WETH from lease offer maker to the owner
+                bool success1 = trasferWeth(_from, address(_nft.ownerOf(_tokenId)), (tokenLeaseOffers[i].price * 9) / 10);
                 require(success1, "Failed to Pay Royalty fee");
+                // transfer royalty fee from lease offer maker to royalty receiver
+                bool success2 = trasferWeth(_from, _royaltyReceiver, roaltyAmount);
+                require(success2, "Failed to Pay Royalty fee");
+                
                 _lease[_tokenId] = tokenLeaseOffers[i];
                 delete leaseOffers[_tokenId][i];
 
@@ -147,13 +159,14 @@ contract Leasing is Ownable {
         return leasableTokenIds;
     }
 
-    function sendLeaseOffer(uint256 _tokenId, uint32 _expiresIn) public payable {
+    function sendLeaseOffer(uint256 _tokenId, uint256 amount, uint32 _expiresIn) public payable {
         require(_nft.ownerOf(_tokenId) != msg.sender, "You can't buy yours.");
         require(_nft.ownerOf(_tokenId) != address(0), "You can't send offer no-owner token");
-        require(msg.value >= _nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10, "Amount of ether sent not correct.");
+        require(amount >= _nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10, "Amount of ether sent not correct.");
+        require(_weth.balanceOf(msg.sender) >= amount, "You don't have enough WETH.");
         require(_expiresIn >= 30, "The minimum to lease the membership is 30 days.");
         require(_offerState[_tokenId][msg.sender] != true, "You can't send mutli offer");
-        leaseOffers[_tokenId].push(LeaseOffer(msg.sender, msg.value, _expiresIn));
+        leaseOffers[_tokenId].push(LeaseOffer(msg.sender, amount, _expiresIn));
         _offerState[_tokenId][msg.sender] = true;
     }
 
