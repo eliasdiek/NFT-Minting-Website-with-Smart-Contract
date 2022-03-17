@@ -8,9 +8,10 @@ import axios from 'axios';
 import Modal from '../../components/modals/Modal';
 import { Ether } from '../../components/icons';
 import Button from '../../components/buttons/Button';
+import { abi } from '../../contracts/Leasing.json';
 
-const { abi } = require("../../contracts/Leasing.json");
 const leaseContractAddress = process.env.NEXT_PUBLIC_LEASE_CONTRACT_ADDRESS;
+const nftContractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
 const tokenBatchURI = process.env.NEXT_PUBLIC_TOKEN_BATCH_URI;
 
 export default function Token() {
@@ -19,6 +20,8 @@ export default function Token() {
     const [loading, setLoading] = useState(false);
     const [btnLoading, setBtnLoading] = useState(false);
     const [amountInvalid, setAmountInvalid] = useState(false);
+    const [tokenIsLeasable, setTokenIsLeasable] = useState(false);
+    const [leasableToken, setLeasableToken] = useState();
     const [amount, setAmount] = useState(0);
     const [duration, setDuration] = useState(30);
     const walletAddr = useSelector((state) => state.address);
@@ -30,8 +33,7 @@ export default function Token() {
             setLoading(true);
 
             const result = await axios.get(tokenBatchURI + '/' + id);
-            console.log('[result]', result);
-            setLoading(false);
+            console.log('[getMetaData]', result);
             setMetaData(result.data);
         }
         catch(err) {
@@ -55,8 +57,10 @@ export default function Token() {
             console.log('[leaseHandler]', w3.utils.toWei(amount), duration);
             const leaseContract = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(leaseContractAddress));
             const result = await leaseContract.methods.setTokenLeasable(id, w3.utils.toWei(amount), duration).send({ from: walletAddr });
-            console.log('[result]', result);
+            console.log('[leaseHandler]', result);
             setBtnLoading(false);
+            setTokenIsLeasable(true);
+            setIsModalOpen(false);
         }
         catch (err) {
             console.log('[err]', err);
@@ -64,8 +68,13 @@ export default function Token() {
         }
     }
 
-    const getLeasableTokens = async () => {
+    const updateLeasableToken = async () => {
         try {
+            setAmountInvalid(false);
+            if(!amount) {
+                setAmountInvalid(true);
+                return false;
+            }
             setBtnLoading(true);
             if(typeof window === 'undefined') throw Error('window is undefined');
             const { ethereum } = window;
@@ -74,13 +83,61 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             console.log('[leaseHandler]', w3.utils.toWei(amount), duration);
             const leaseContract = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(leaseContractAddress));
-            const result = await leaseContract.methods.getLeasableTokens().call();
+            const result = await leaseContract.methods.updateLeasableToken(id, w3.utils.toWei(amount), duration).send({ from: walletAddr });
             console.log('[result]', result);
             setBtnLoading(false);
+            setTokenIsLeasable(true);
         }
         catch (err) {
             console.log('[err]', err);
             setBtnLoading(false);
+        }
+    }
+
+    const getLeasableToken = async () => {
+        try {
+            setLoading(true);
+            if(typeof window === 'undefined') throw Error('window is undefined');
+            const { ethereum } = window;
+            if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
+
+            const w3 = new Web3(ethereum);
+            const leaseContract = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(leaseContractAddress));
+            const result = await leaseContract.methods.getLeasableToken(String(id)).call();
+            console.log('[getLeasableToken]', result);
+
+            if(result['tokenId'] > 0) {
+                setTokenIsLeasable(true);
+                setLeasableToken({
+                    tokenId: result['tokenId'],
+                    price: w3.utils.fromWei(result['price']),
+                    duration: result['duration']
+                });
+            }
+            setLoading(false);
+        }
+        catch (err) {
+            console.log('[err]', err);
+            setLoading(false);
+        }
+    }
+
+    const cancelTokenLeasable = async () => {
+        try {
+            setLoading(true);
+            if(typeof window === 'undefined') throw Error('window is undefined');
+            const { ethereum } = window;
+            if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
+
+            const w3 = new Web3(ethereum);
+            const leaseContract = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(leaseContractAddress));
+            const result = await leaseContract.methods.cancelTokenLeasable(id).send({ from: walletAddr });
+            console.log('[result]', result);
+            setLoading(false);
+        }
+        catch (err) {
+            console.log('[err]', err);
+            setLoading(false);
         }
     }
 
@@ -91,10 +148,12 @@ export default function Token() {
     function openModal() {
         setIsModalOpen(true);
     }
-    
 
     useEffect(() => {
-        if (id) getMetaData();
+        if (id) {
+            getMetaData();
+            getLeasableToken();
+        }
     }, [id]);
 
     return (
@@ -114,13 +173,19 @@ export default function Token() {
                         </React.Fragment>
                     ) : (
                         metaData && <section>
-                            <TokenDetail metaData={metaData} openLeaseModal={() => setIsModalOpen(true)} />
+                            <TokenDetail
+                             metaData={metaData}
+                             openLeaseModal={() => setIsModalOpen(true)}
+                             tokenIsLeasable={tokenIsLeasable}
+                             cancelTokenLeasable={cancelTokenLeasable}
+                             leasableToken={leasableToken}
+                            />
                         </section>
                     ) 
                 }
-                <button onClick={getLeasableTokens}>getLeasableTokens</button>
+                <button onClick={() => getLeasableToken(8001)} className="p-2 border border-gray-400">getLeasableToken</button>
 
-                <Modal isOpen={isModalOpen} openModal={openModal} closeModal={closeModal} title="List item for leasing">
+                <Modal isOpen={isModalOpen} openModal={openModal} closeModal={closeModal} title={tokenIsLeasable ? `Lower the listing price` : `List item for leasing`}>
                     <div className="py-4">
                         <div className="mb-4">
                             <div className="py-1">
@@ -145,7 +210,7 @@ export default function Token() {
                                 <label className="text-sm font-medium">Duration</label>
                             </div>
                             <div className="flex items-center">
-                                <select className="w-full text-md py-2 px-2 h-12 border border-gray-300" defaultValue="30" onChange={e => setDuration(e.target.value)}>
+                                <select className="w-full text-md py-2 px-2 h-12 border border-gray-300 outline-none focus:ring-2 rounded-md" defaultValue="30" onChange={e => setDuration(e.target.value)}>
                                     <option value="30">30 days</option>
                                     <option value="45">45 days</option>
                                     <option value="60">60 days</option>
@@ -156,14 +221,15 @@ export default function Token() {
                         <div className="pt-4">
                             <Button
                              theme="secondary"
-                             className={`focus:ring-4 ${btnLoading && 'cursor-not-allowed' }`}
-                             onClick={leaseHandler}
+                             className={`focus:ring-4 capitalize ${btnLoading && 'cursor-not-allowed' }`}
+                             onClick={tokenIsLeasable ? updateLeasableToken : leaseHandler}
                              disabled={btnLoading ? true :  false}
                             >
-                                { btnLoading ? <span
-                                className="block animate-spin bg-transparent border-3 border-b-white border-t-blue-400 rounded-full h-5 w-5 ..." viewBox="0 0 24 24"
-                                ></span> : 
-                                <span>Submit</span> }
+                                {
+                                    btnLoading ? 
+                                    <span className="block animate-spin bg-transparent border-3 border-b-white border-t-blue-400 rounded-full h-5 w-5"></span> : 
+                                    !tokenIsLeasable ? <span>Submit</span> : <span>Set this price</span> 
+                                }
                             </Button>
                         </div>
                     </div>

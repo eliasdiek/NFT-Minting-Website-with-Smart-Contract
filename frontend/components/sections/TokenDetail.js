@@ -11,7 +11,7 @@ function truncate(string) {
     return input.substr(0, 6) + '...' + input.substr(input.length - 4);
 }
 
-export default function TokenDetail({ metaData, openLeaseModal }) {
+export default function TokenDetail({ metaData, openLeaseModal, tokenIsLeasable, cancelTokenLeasable, leasableToken }) {
     return (
         <div className="container p-4 md:p-8">
             <div className="block md:flex md:pt-12 relative">
@@ -59,6 +59,26 @@ export default function TokenDetail({ metaData, openLeaseModal }) {
                         <h2 className="text-3xl font-semibold text-copy-primary">{ metaData.name }</h2>
                     </div>
 
+                    { tokenIsLeasable && <div className="bg-white border border-gray-300 rounded-md my-4">
+                        <div className="px-4 py-4 border-b borer-gray-300 font-medium">Sale ends March 23, 2022 at 8:48pm EDT</div>
+                        <div className="px-4 py-8 bg-background-light">
+                            <div className="py-2 text-sm">
+                                <div className="flex flex-col items-start justify-start">
+                                    <div className="text-lg text-copy-secondary ">Current price</div>
+                                    <div className="flex items-center py-2">
+                                        <Ether width="20" height="20" fill="#333" />
+                                        <span className="text-3xl font-medium ml-1">{ leasableToken.price }</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-start">
+                                    <Button theme="secondary" className="capitalize w-auto">
+                                        Buy now
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div> }
+
                     <div className="bg-white border border-gray-300 rounded-md my-4">
                         <div className="px-4 py-4 border-b borer-gray-300 font-medium">Detail</div>
                         <div className="px-4 py-8 bg-background-light">
@@ -96,15 +116,36 @@ export default function TokenDetail({ metaData, openLeaseModal }) {
                 </div>
 
                 <div className="fixed bottom-0 left-0 md:top-20 md:bottom-auto border-y border-gray-300 w-full bg-background-light z-10">
-                    <div className="container flex items-center justify-center md:justify-end py-2 md:px-16">
-                        <Button
-                            theme="primary"
-                            className="w-auto capitalize !py-2"
-                            onClick={() => openLeaseModal(metaData.tokenId)}
-                        >
-                            Lease
-                        </Button>
-                    </div>
+                    {
+                        tokenIsLeasable ? (
+                            <div className="container flex items-center justify-center md:justify-end py-2 md:px-16">
+                                <Button
+                                    theme="tertiary"
+                                    className="w-auto capitalize !py-2"
+                                    onClick={() => cancelTokenLeasable()}
+                                >
+                                    Cancel listing
+                                </Button>
+                                <Button
+                                    theme="secondary"
+                                    className="w-auto capitalize !py-2 border-primary ml-4"
+                                    onClick={() => openLeaseModal(metaData.tokenId)}
+                                >
+                                    Lower price
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="container flex items-center justify-center md:justify-end py-2 md:px-16">
+                                <Button
+                                    theme="primary"
+                                    className="w-auto capitalize !py-2"
+                                    onClick={() => openLeaseModal(metaData.tokenId)}
+                                >
+                                    Lease
+                                </Button>
+                            </div>
+                        )
+                    }
                 </div>
             </div>
         </div>

@@ -107,6 +107,31 @@ contract Leasing is Ownable {
         return leasableToken;
     }
 
+    function updateLeasableToken(uint256 _tokenId, uint256 _price, uint32 _duration) external onlyOwnerOf(_tokenId) {
+        require(_price >= ((_nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10) * 10**26) / uint256(_nft.getLatestPrice()), "Amount of ether sent is not correct.");
+        require(_duration >= 30, "The minimum to lease the membership is 30 days.");
+        
+        LeasableToken memory leasableToken = getLeasableToken(_tokenId);
+        require(leasableToken.tokenId != 0, "Token is not leasable");
+        for(uint256 i = 0; i < _leasableTokens.length; i++) {
+            if(_leasableTokens[i].tokenId == _tokenId) {
+                _leasableTokens[i].price = _price;
+                _leasableTokens[i].duration = _duration;
+                break;
+            }
+        }
+    }
+
+    function cancelTokenLeasable(uint256 _tokenId) external onlyOwnerOf(_tokenId) {
+        for(uint256 i = 0; i < _leasableTokens.length; i++) {
+            if (_leasableTokens[i].tokenId == _tokenId) {
+                _leasableTokens[i] = _leasableTokens[_leasableTokens.length - 1];
+                _leasableTokens.pop();
+                break;
+            }
+        }
+    }
+
     function getLeasableTokens() external view returns(LeasableToken[] memory) {
         return _leasableTokens;
     }

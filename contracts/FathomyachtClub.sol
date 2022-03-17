@@ -18,7 +18,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   uint256[] private NFT_PRICE = [50, 100, 150, 0, 0];
   uint256[] private PRESALE_TIER_MINT_LIMIT = [100, 100, 50, 0, 0];
   uint256[] private PUBLIC_SALE_TIER_MINT_LIMIT = [900, 900, 950, 0, 0];
-  string private _tokenBatchURI = "https://gateway.pinata.cloud/ipfs/QmRgmtg7T8nL3iP81eg3gTWd6WHUjs75M4FzGYx9cthYCg";
+  string private _tokenBatchURI = "https://fyc.mypinata.cloud/ipfs/QmbhXRfyS53JKMpRQBSgs4s4jpTZGLhWPVcrtkYqHvKXQE/";
   // 0: presale start block, 1: public sale start block
   uint256[] private EVENT_BLOCK = [10264904, 10437473];
   // Mapping from address to minted number of NFTs(0: power, 1: yacht, 2: prestige)
@@ -40,7 +40,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   modifier ableMintBatch(uint256 number, uint8 tierNumber) {
     require(NFT_PRICE[tierNumber] != 0, "Tier price is not set.");
     require(number <= 2, "You are not allowed to buy more than 2 tokens at once.");
-    require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
+    require(tierNumber >= 0 && tierNumber <= 4, "Invalied tierNumber of array.");
     require(MAX_TOKEN > number + totalSupply() + 1, "Not enough tokens left to buy.");
 
     uint8 blockStatus = checkBlock(msg.sender);
@@ -87,12 +87,12 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   }
 
   function getTierPrice(uint8 tierNumber) public view returns(uint256) {
-    require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array");
+    require(tierNumber >= 0 && tierNumber <= 4, "Invalied tierNumber of array");
     return (NFT_PRICE[tierNumber] * (10 ** 26)) / uint256(getLatestPrice());
   }
 
   function setTierPrice(uint256 price, uint8 tierNumber) external onlyOwner {
-    require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
+    require(tierNumber >= 0 && tierNumber <= 4, "Invalied tierNumber of array.");
     NFT_PRICE[tierNumber] = price;
   }
 
@@ -104,40 +104,58 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     MAX_TOKEN = limit;
   }
 
-  function getTierLimit(uint8 tierNumber) external view returns(uint256) {
-    require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
+  /**
+    * @dev Set tier mint limit per sale season
+    *
+    * @param _saleNumber 1: Presale, 2: Public Sale
+    * @param _tierNumber 0: Power, 1: Yacht, 2: Prestige, 3: Ultra, 4: Reserve
+    */
+  function getTierMintLimit(uint8 _saleNumber, uint8 _tierNumber) external view returns(uint256) {
+    require(_saleNumber >= 1 && _saleNumber <= 2, "saleNumber must be larger than 0. 1: Presale, 2: Public sale");
+    require(_tierNumber >= 0 && _tierNumber <= 4, "Invalied tierNumber of array.");
 
-    uint256 curBlock = block.number;
-    if (curBlock >= EVENT_BLOCK[1]) {
-      return PUBLIC_SALE_TIER_MINT_LIMIT[tierNumber];
+    if (_saleNumber == 1) {
+      return PRESALE_TIER_MINT_LIMIT[_tierNumber];
     }
-    if (curBlock >= EVENT_BLOCK[0]) {
-      return PRESALE_TIER_MINT_LIMIT[tierNumber];
+    else {
+      return PUBLIC_SALE_TIER_MINT_LIMIT[_tierNumber];
     }
-
-    return 0;
   }
 
-  function setTierMintLimit(uint256 limit, uint8 tierNumber) external onlyOwner {
-    require(tierNumber >= 0 && tierNumber <= 2, "Invalied tierNumber of array.");
+  /**
+    * @dev Set tier mint limit per sale season
+    *
+    * @param _saleNumber 1: Presale, 2: Public Sale
+    * @param _limit target address that will receive the tokens
+    * @param _tierNumber 0: Power, 1: Yacht, 2: Prestige, 3: Ultra, 4: Reserve
+    */
+  function setTierMintLimit(uint8 _saleNumber, uint256 _limit, uint8 _tierNumber) external onlyOwner {
+    require(_saleNumber >= 1 && _saleNumber <= 2, "saleNumber must be larger than 0. 1: Presale, 2: Public sale");
+    require(_tierNumber >= 0 && _tierNumber <= 4, "Invalied tierNumber of array.");
 
-    uint256 curBlock = block.number;
-    if (curBlock >= EVENT_BLOCK[1]) {
-      PUBLIC_SALE_TIER_MINT_LIMIT[tierNumber] = limit;
+    if (_saleNumber == 1) {
+      PRESALE_TIER_MINT_LIMIT[_tierNumber] = _limit;
     }
-    if (curBlock >= EVENT_BLOCK[0]) {
-      PRESALE_TIER_MINT_LIMIT[tierNumber] = limit;
+    else {
+      PUBLIC_SALE_TIER_MINT_LIMIT[_tierNumber] = _limit;
     }
+  }
+
+  /**
+    * @dev Set tier mint limit per sale season
+    *
+    * @param _saleNumber 1: Presale, 2: Public Sale
+    * @param _blockNumber Block number of sale season
+    */
+  function setSaleEvent(uint8 _saleNumber, uint256 _blockNumber) external onlyOwner {
+    require(_saleNumber >= 1 && _saleNumber <= 2, "saleNumber must be larger than 0. 1: Presale, 2: Public sale");
+    EVENT_BLOCK[_saleNumber - 1] = _blockNumber;
   }
 
   function withDraw() external onlyOwner {
     address payable tgt = payable(owner());
     (bool success1, ) = tgt.call{value:address(this).balance}("");
     require(success1, "Failed to Withdraw Ether");
-  }
-
-  function getTokenURI(uint256 _tokenId) public view returns(string memory) {
-    return string(abi.encodePacked(_tokenBatchURI, '/', uint2str(_tokenId)));
   }
 
   function setTokenBatchURI(string memory _batchTokenURI) external onlyOwner {
@@ -176,7 +194,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       _mint(msg.sender, newItemId);
       _tokenToTier[newItemId] = tierNumber;
       _tokensOfholder[msg.sender].push(newItemId);
-      _setTokenURI(newItemId, getTokenURI(newItemId));
     }
 
     tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
@@ -226,26 +243,8 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     return price;
   }
 
-  function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
-    if (_i == 0) {
-      return "0";
-    }
-    uint j = _i;
-    uint len;
-    while (j != 0) {
-      len++;
-      j /= 10;
-    }
-    bytes memory bstr = new bytes(len);
-    uint k = len;
-    while (_i != 0) {
-      k = k-1;
-      uint8 temp = (48 + uint8(_i - _i / 10 * 10));
-      bytes1 b1 = bytes1(temp);
-      bstr[k] = b1;
-      _i /= 10;
-    }
-    
-    return string(bstr);
+  function _baseURI() internal view override returns (string memory) {
+    string memory baseURI = _tokenBatchURI;
+    return baseURI;
   }
 }
