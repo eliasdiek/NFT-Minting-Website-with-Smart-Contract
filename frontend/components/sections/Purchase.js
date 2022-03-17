@@ -11,7 +11,7 @@ import { addToCart } from '../../store/actions';
 import Web3 from 'web3';
 import axios from 'axios';
 
-const { abi } = require("../../contracts/FathomyachtClub.json");
+const abi = require("../../contracts/FathomyachtClub.json");
 const contractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
 
 const MAX_MINTABLE = 2;

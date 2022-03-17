@@ -7,8 +7,8 @@ import Web3 from 'web3';
 import axios from 'axios';
 
 const abi = require("../contracts/FathomyachtClub.json");
-const contractAddress = '0xF16EB26739C290e83B7311C16596F3209890e5Fd';
-const tokenBatchURI = "https://gateway.pinata.cloud/ipfs/QmRgmtg7T8nL3iP81eg3gTWd6WHUjs75M4FzGYx9cthYCg";
+const nftContractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
+const tokenBatchURI = process.env.NEXT_PUBLIC_TOKEN_BATCH_URI;
 
 export default function Location() {
     const [myTokens, setMyTokens] = useState([]);
@@ -21,12 +21,13 @@ export default function Location() {
             setLoading(true);
             const { ethereum } = window;
             var w3 = new Web3(ethereum);
-            var contract_abi = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(contractAddress));
+            var contract_abi = new w3.eth.Contract(abi, nftContractAddress);
             const tokens = await contract_abi.methods.getTokensOfHolder(walletAddr).call();
             const metas = [];
             for(let i = 0; i < tokens.length; i++) {
+                console.log('[tokenBatchURI]', tokenBatchURI);
 
-                const metaData = await axios.get(tokenBatchURI + '/' + tokenIdToString(tokens[i]));
+                const metaData = await axios.get(tokenBatchURI + '/' + String(tokens[i]));
                 metas.push(metaData?.data);
             }
             console.log('[metas]', metas);
@@ -36,27 +37,6 @@ export default function Location() {
         catch(err) {
             console.log('[err]', err);
         }
-    }
-
-    const tokenIdToString = (tokenId) => {
-        let prefix = '';
-        if (tokenId == 0) {
-          return "0";
-        }
-        else if (tokenId > 0 && tokenId < 10) {
-          prefix = '0000';
-        }
-        else if (tokenId >= 10 && tokenId < 100) {
-          prefix = '000';
-        }
-        else if (tokenId >= 100 && tokenId < 1000) {
-          prefix = '00';
-        }
-        else if (tokenId >= 1000 && tokenId < 10000) {
-          prefix = '0';
-        }
-
-        return prefix + String(tokenId);
     }
 
     const onTokenClick = (tokenId) => {

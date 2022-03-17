@@ -47,7 +47,7 @@ export default function Token() {
         try {
             setLoading(true);
 
-            const result = await axios.get(tokenBatchURI + '/' + id);
+            const result = await axios.get(tokenBatchURI + '/' + parseInt(id));
             console.log('[getMetaData]', result);
             setMetaData(result.data);
         }
@@ -453,7 +453,7 @@ export default function Token() {
                             </div>
 
                             { amountInvalid !== "" && <div className="text-sm text-red-600 py-1">&times; {amountInvalid}</div> }
-                            { wethBalance && <div className="text-xs text-copy-secondary text-right py-1">Balance: {wethBalance}</div> }
+                            { wethBalance > 0 && <div className="text-xs text-copy-secondary text-right py-1">Balance: {wethBalance}</div> }
                         </div>
                         <div className="mb-4">
                             <div className="py-1">
@@ -471,9 +471,9 @@ export default function Token() {
                         <div className="pt-4">
                             <Button
                              theme="secondary"
-                             className={`focus:ring-4 capitalize ${btnLoading && 'cursor-not-allowed opacity-50' } ${wethBalance === 0 && 'cursor-not-allowed opacity-50'}`}
+                             className={`focus:ring-4 capitalize ${btnLoading && 'cursor-not-allowed opacity-50' } ${!isOwner && wethBalance === 0 && 'cursor-not-allowed opacity-50'}`}
                              onClick={isOwner ? (tokenIsLeasable ? updateLeasableToken : leaseHandler) : makeOfferHandler}
-                             disabled={btnLoading || wethBalance === 0  ? true :  false}
+                             disabled={btnLoading || (!isOwner && wethBalance === 0)  ? true :  false}
                             >
                                 {
                                     btnLoading ? 

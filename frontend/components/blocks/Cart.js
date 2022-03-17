@@ -6,7 +6,7 @@ import { removeCartItem, clearCart } from '../../store/actions';
 import Web3 from 'web3';
 
 export default function Cart({ memberShip }) {
-    const { abi } = require("../../contracts/FathomyachtClub.json");
+    const abi = require("../../contracts/FathomyachtClub.json");
     const contractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
 
     const [loading, setLoading] = useState(false);
@@ -111,7 +111,7 @@ export default function Cart({ memberShip }) {
                 { minted && cart?.length == 0 && <div className="mb-8">
                     <div className="text-2xl text-center text-primary font-medium py-6">Thank you for purchasing { memberShip } membership!</div>
                     <div className="flex items-center justify-center">
-                        <Link href="/">
+                        <Link href="/collection">
                             <a className="uppercase bg-gradient-to-br w-72 text-center from-background-primary to-background-secondary text-17px text-white py-3 px-9 rounded-full font-pop font-semibold focus:ring-4">View my collection</a>
                         </Link>
                     </div>

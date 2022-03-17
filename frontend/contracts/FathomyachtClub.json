@@ -429,6 +429,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getAllTokens",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address[]",
@@ -527,11 +540,16 @@
     "inputs": [
       {
         "internalType": "uint8",
-        "name": "tierNumber",
+        "name": "_saleNumber",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_tierNumber",
         "type": "uint8"
       }
     ],
-    "name": "getTierLimit",
+    "name": "getTierMintLimit",
     "outputs": [
       {
         "internalType": "uint256",
@@ -545,13 +563,18 @@
   {
     "inputs": [
       {
+        "internalType": "uint8",
+        "name": "_saleNumber",
+        "type": "uint8"
+      },
+      {
         "internalType": "uint256",
-        "name": "limit",
+        "name": "_limit",
         "type": "uint256"
       },
       {
         "internalType": "uint8",
-        "name": "tierNumber",
+        "name": "_tierNumber",
         "type": "uint8"
       }
     ],
@@ -561,29 +584,28 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "withDraw",
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "_saleNumber",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_blockNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "setSaleEvent",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getTokenURI",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
+    "inputs": [],
+    "name": "withDraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

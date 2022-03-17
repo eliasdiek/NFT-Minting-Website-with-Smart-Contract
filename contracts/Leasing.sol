@@ -86,7 +86,7 @@ contract Leasing is Ownable {
     }
 
     function setTokenLeasable(uint256 _tokenId, uint256 _price, uint32 _duration) external onlyOwnerOf(_tokenId) {
-        require(_price >= ((_nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10) * 10**26) / uint256(_nft.getLatestPrice()), "Amount of ether sent is not correct.");
+        require(_price >= _nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10, "Amount of ether sent is not correct.");
         require(_duration >= 30, "The minimum to lease the membership is 30 days.");
 
         LeasableToken memory leasableToken = getLeasableToken(_tokenId);
@@ -113,7 +113,7 @@ contract Leasing is Ownable {
     }
 
     function updateLeasableToken(uint256 _tokenId, uint256 _price, uint32 _duration) external onlyOwnerOf(_tokenId) {
-        require(_price >= ((_nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10) * 10**26) / uint256(_nft.getLatestPrice()), "Amount of ether sent is not correct.");
+        require(_price >= _nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10, "Amount of ether sent is not correct.");
         require(_duration >= 30, "The minimum to lease the membership is 30 days.");
         
         LeasableToken memory leasableToken = getLeasableToken(_tokenId);
@@ -193,7 +193,7 @@ contract Leasing is Ownable {
     function sendLeaseOffer(uint256 _tokenId, uint256 _amount, uint32 _expiresIn) public payable {
         require(_nft.ownerOf(_tokenId) != msg.sender, "You can't buy yours.");
         require(_nft.ownerOf(_tokenId) != address(0), "You can't send offer no-owner token");
-        require(_amount >= ((_nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10) * 10**26) / uint256(_nft.getLatestPrice()), "Amount of ether sent is not correct.");
+        require(_amount >= _nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10, "Amount of ether sent is not correct.");
         require(_weth.balanceOf(msg.sender) >= _amount, "You don't have enough WETH.");
         require(_expiresIn >= 30, "The minimum to lease the membership is 30 days.");
         require(_offerState[_tokenId][msg.sender] != true, "You can't send mutli offer");
@@ -205,7 +205,7 @@ contract Leasing is Ownable {
         require(_nft.ownerOf(_tokenId) != msg.sender, "You can't buy yours.");
         require(leasable[_tokenId], "Token is not public");
         require(_nft.ownerOf(_tokenId) != address(0), "You can't send offer no-owner token");
-        // require(msg.value >= leasePrices[_tokenId], "Amount of ether sent not enough.");
+        require(msg.value >= _nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10, "Amount of ether sent is not correct.");
 
         (address royaltyReceiver, uint256 roaltyAmount) = getRoalityInfo(_tokenId, msg.value);
         address payable _royaltyReceiver = payable(royaltyReceiver);
