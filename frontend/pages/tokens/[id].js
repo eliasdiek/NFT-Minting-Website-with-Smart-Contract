@@ -13,13 +13,14 @@ const { abi } = require("../../contracts/Leasing.json");
 const leaseContractAddress = process.env.NEXT_PUBLIC_LEASE_CONTRACT_ADDRESS;
 const tokenBatchURI = process.env.NEXT_PUBLIC_TOKEN_BATCH_URI;
 
-export default function Location() {
+export default function Token() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [metaData, setMetaData] = useState();
     const [loading, setLoading] = useState(false);
+    const [btnLoading, setBtnLoading] = useState(false);
     const [amountInvalid, setAmountInvalid] = useState(false);
     const [amount, setAmount] = useState(0);
-    const [duration, setDuration] = useState(0);
+    const [duration, setDuration] = useState(30);
     const walletAddr = useSelector((state) => state.address);
     const router = useRouter();
     const { id } = router.query;
@@ -40,19 +41,46 @@ export default function Location() {
 
     const leaseHandler = async () => {
         try {
-            
+            setAmountInvalid(false);
+            if(!amount) {
+                setAmountInvalid(true);
+                return false;
+            }
+            setBtnLoading(true);
             if(typeof window === 'undefined') throw Error('window is undefined');
             const { ethereum } = window;
             if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
 
-            console.log('[leaseHandler]', amount, duration);
             const w3 = new Web3(ethereum);
+            console.log('[leaseHandler]', w3.utils.toWei(amount), duration);
             const leaseContract = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(leaseContractAddress));
-            const result = await leaseContract.methods.getNFTAddress().call();
+            const result = await leaseContract.methods.setTokenLeasable(id, w3.utils.toWei(amount), duration).send({ from: walletAddr });
             console.log('[result]', result);
+            setBtnLoading(false);
         }
         catch (err) {
             console.log('[err]', err);
+            setBtnLoading(false);
+        }
+    }
+
+    const getLeasableTokens = async () => {
+        try {
+            setBtnLoading(true);
+            if(typeof window === 'undefined') throw Error('window is undefined');
+            const { ethereum } = window;
+            if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
+
+            const w3 = new Web3(ethereum);
+            console.log('[leaseHandler]', w3.utils.toWei(amount), duration);
+            const leaseContract = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(leaseContractAddress));
+            const result = await leaseContract.methods.getLeasableTokens().call();
+            console.log('[result]', result);
+            setBtnLoading(false);
+        }
+        catch (err) {
+            console.log('[err]', err);
+            setBtnLoading(false);
         }
     }
 
@@ -90,6 +118,7 @@ export default function Location() {
                         </section>
                     ) 
                 }
+                <button onClick={getLeasableTokens}>getLeasableTokens</button>
 
                 <Modal isOpen={isModalOpen} openModal={openModal} closeModal={closeModal} title="List item for leasing">
                     <div className="py-4">
@@ -116,7 +145,7 @@ export default function Location() {
                                 <label className="text-sm font-medium">Duration</label>
                             </div>
                             <div className="flex items-center">
-                                <select className="w-full text-md py-2 px-2 h-12 border border-gray-300" onChange={e => setDuration(e.target.value)}>
+                                <select className="w-full text-md py-2 px-2 h-12 border border-gray-300" defaultValue="30" onChange={e => setDuration(e.target.value)}>
                                     <option value="30">30 days</option>
                                     <option value="45">45 days</option>
                                     <option value="60">60 days</option>
@@ -125,8 +154,16 @@ export default function Location() {
                             </div>
                         </div>
                         <div className="pt-4">
-                            <Button theme="secondary" className="focus:ring-4" onClick={leaseHandler}>
-                                Submit
+                            <Button
+                             theme="secondary"
+                             className={`focus:ring-4 ${btnLoading && 'cursor-not-allowed' }`}
+                             onClick={leaseHandler}
+                             disabled={btnLoading ? true :  false}
+                            >
+                                { btnLoading ? <span
+                                className="block animate-spin bg-transparent border-3 border-b-white border-t-blue-400 rounded-full h-5 w-5 ..." viewBox="0 0 24 24"
+                                ></span> : 
+                                <span>Submit</span> }
                             </Button>
                         </div>
                     </div>

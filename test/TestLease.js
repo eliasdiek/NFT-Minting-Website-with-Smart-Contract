@@ -15,8 +15,9 @@ contract("Leasing", (accounts) => {
     })
 
     it("Get LeasableToken", async () => {
-        await contractInstance.setTokenLeasable(1, '50000000000000000', 30);
-        const tmp1 = await contractInstance.getLeasableToken(1);
+        await contractInstance.setTokenLeasable(1, '50000000000000000', 45);
+        await contractInstance.setTokenLeasable(2, '50000000000000000', 30);
+        const tmp1 = await contractInstance.getLeasableTokens();
         console.log('[getLeasableToken]', tmp1);
     })
 })

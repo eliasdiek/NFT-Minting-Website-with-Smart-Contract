@@ -88,15 +88,19 @@ contract Leasing is Ownable {
     function setTokenLeasable(uint256 _tokenId, uint256 _price, uint32 _duration) external onlyOwnerOf(_tokenId) {
         require(_price >= ((_nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10) * 10**26) / uint256(_nft.getLatestPrice()), "Amount of ether sent is not correct.");
         require(_duration >= 30, "The minimum to lease the membership is 30 days.");
+
+        LeasableToken memory leasableToken = getLeasableToken(_tokenId);
+        require(leasableToken.tokenId == 0, "Token is already leasable");
         _leasableTokens.push(LeasableToken(_tokenId, _price, _duration));
         leasable[_tokenId] = true;
     }
 
-    function getLeasableToken(uint256 _tokenId) external view returns(LeasableToken memory) {
+    function getLeasableToken(uint256 _tokenId) public view returns(LeasableToken memory) {
         LeasableToken memory leasableToken;
-        for(uint256 i = 1; i <= _leasableTokens.length; i++) {
+        for(uint256 i = 0; i < _leasableTokens.length; i++) {
             if(_leasableTokens[i].tokenId == _tokenId) {
                 leasableToken = _leasableTokens[i];
+                break;
             }
         }
 
@@ -191,5 +195,28 @@ contract Leasing is Ownable {
                 break;
             }
         }
+    }
+
+    function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
+        if (_i == 0) {
+        return "0";
+        }
+        uint j = _i;
+        uint len;
+        while (j != 0) {
+        len++;
+        j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint k = len;
+        while (_i != 0) {
+        k = k-1;
+        uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+        bytes1 b1 = bytes1(temp);
+        bstr[k] = b1;
+        _i /= 10;
+        }
+        
+        return string(bstr);
     }
 }
