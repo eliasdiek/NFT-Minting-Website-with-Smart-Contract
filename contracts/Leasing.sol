@@ -107,6 +107,11 @@ contract Leasing is Ownable {
         return leasableToken;
     }
 
+    function getLease(uint256 _tokenId) external view returns(LeaseOffer memory) {
+        LeaseOffer memory leaseItem = _lease[_tokenId];
+        return leaseItem;
+    }
+
     function updateLeasableToken(uint256 _tokenId, uint256 _price, uint32 _duration) external onlyOwnerOf(_tokenId) {
         require(_price >= ((_nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10) * 10**26) / uint256(_nft.getLatestPrice()), "Amount of ether sent is not correct.");
         require(_duration >= 30, "The minimum to lease the membership is 30 days.");
@@ -136,7 +141,7 @@ contract Leasing is Ownable {
         return _leasableTokens;
     }
 
-    function getLeaseOffers(uint256 _tokenId) external view onlyOwnerOf(_tokenId) returns(LeaseOffer[] memory) {
+    function getLeaseOffers(uint256 _tokenId) external view returns(LeaseOffer[] memory) {
         return leaseOffers[_tokenId];
     }
 
@@ -168,15 +173,13 @@ contract Leasing is Ownable {
         _offerState[_tokenId][_from] = false;
     }
 
-    function calcenLeaseOffer(uint256 _tokenId) external {
+    function calcenLeaseOffer(uint256 _tokenId) external onlyOwnerOf(_tokenId) {
         require(_nft.ownerOf(_tokenId) != msg.sender, "You can't buy yours.");
         require(_nft.ownerOf(_tokenId) != address(0), "You can't send offer no-owner token");
         LeaseOffer[] memory tokenLeaseOffers = leaseOffers[_tokenId];
 
         for(uint256 i = 0; i < tokenLeaseOffers.length; i++) {
             if(tokenLeaseOffers[i].from == msg.sender) {
-                (bool success1, ) = msg.sender.call{ value: tokenLeaseOffers[i].price * _refundPercentFee / 100 }("");
-                require(success1, "Failed to refund");
                 delete leaseOffers[_tokenId][i];
 
                 emit ApproveLeasing(_tokenId);

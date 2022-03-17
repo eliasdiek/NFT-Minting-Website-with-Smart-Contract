@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { Ether } from '../icons';
+import { Ether, Wether } from '../icons';
 import Button from '../buttons/Button';
 
 const nftContractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
@@ -11,7 +11,16 @@ function truncate(string) {
     return input.substr(0, 6) + '...' + input.substr(input.length - 4);
 }
 
-export default function TokenDetail({ metaData, openLeaseModal, tokenIsLeasable, cancelTokenLeasable, leasableToken }) {
+export default function TokenDetail({
+    metaData,
+    openLeaseModal,
+    tokenIsLeasable,
+    cancelTokenLeasable,
+    leasableToken,
+    isOwner,
+    offers,
+    approveOffer
+}) {
     return (
         <div className="container p-4 md:p-8">
             <div className="block md:flex md:pt-12 relative">
@@ -59,7 +68,7 @@ export default function TokenDetail({ metaData, openLeaseModal, tokenIsLeasable,
                         <h2 className="text-3xl font-semibold text-copy-primary">{ metaData.name }</h2>
                     </div>
 
-                    { tokenIsLeasable && <div className="bg-white border border-gray-300 rounded-md my-4">
+                    { (tokenIsLeasable && leasableToken) && <div className="bg-white border border-gray-300 rounded-md my-4">
                         <div className="px-4 py-4 border-b borer-gray-300 font-medium">Sale ends March 23, 2022 at 8:48pm EDT</div>
                         <div className="px-4 py-8 bg-background-light">
                             <div className="py-2 text-sm">
@@ -71,8 +80,12 @@ export default function TokenDetail({ metaData, openLeaseModal, tokenIsLeasable,
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-start">
-                                    <Button theme="secondary" className="capitalize w-auto">
-                                        Buy now
+                                    <Button
+                                     theme="secondary"
+                                     className={`capitalize w-auto ${isOwner ? 'opacity-50 cursor-not-allowed' : 'opacity-1'}`}
+                                     disabled={isOwner ? true : false}
+                                    >
+                                        Lease now
                                     </Button>
                                 </div>
                             </div>
@@ -109,15 +122,50 @@ export default function TokenDetail({ metaData, openLeaseModal, tokenIsLeasable,
 
                     <div className="bg-white border border-gray-300 rounded-md my-4">
                         <div className="px-4 py-4 border-b borer-gray-300 font-medium">Offers</div>
-                        <div className="px-4 py-8 bg-background-light">
-                            <div className="text-sm">No offers yet</div>
-                        </div>
+                        {
+                            offers.length ? (
+                                <div className="px-4 py-8 bg-background-light">
+                                    {
+                                        offers.map((offer, index) => {
+                                            return (
+                                                <div key={index} className="py-2 border-b border-gray-200 flex items-center">
+                                                    <div className="text-center text-sm flex items-center w-36 shrink">
+                                                        <Wether width="15" height="20" />
+                                                        <div className="ml-2">
+                                                            <span className="font-bold">{ offer['price'] }</span> WETH
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-center text-sm w-16 shrink">{ offer['expiresIn'] }</div>
+                                                    <div className="text-center text-sm w-36 shrink grow text-primary">
+                                                        <a href={`https://rinkeby.etherscan.io/address/${offer['from']}`} title={offer['from']} target="_blank" rel="noreferrer">
+                                                            { truncate(offer['from']) }
+                                                        </a>
+                                                    </div>
+                                                    <div className="flex items-center justify-end shrink grow text-xs">
+                                                        <button
+                                                         className="bg-white rounded-md border border-primary py-1 px-4 ml-2"
+                                                         onClick={() => approveOffer(offer['from'])}
+                                                        >
+                                                            Accept
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })
+                                    }
+                                </div>
+                            ) : (
+                                <div className="px-4 py-8 bg-background-light">
+                                    <div className="text-sm">No offers yet</div>
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
 
                 <div className="fixed bottom-0 left-0 md:top-20 md:bottom-auto border-y border-gray-300 w-full bg-background-light z-10">
                     {
-                        tokenIsLeasable ? (
+                        isOwner ? (tokenIsLeasable ? (
                             <div className="container flex items-center justify-center md:justify-end py-2 md:px-16">
                                 <Button
                                     theme="tertiary"
@@ -141,7 +189,17 @@ export default function TokenDetail({ metaData, openLeaseModal, tokenIsLeasable,
                                     className="w-auto capitalize !py-2"
                                     onClick={() => openLeaseModal(metaData.tokenId)}
                                 >
-                                    Lease
+                                    Set lease
+                                </Button>
+                            </div>
+                        )) : (
+                            <div className="container flex items-center justify-center md:justify-end py-2 md:px-16">
+                                <Button
+                                    theme="primary"
+                                    className="w-auto capitalize !py-2"
+                                    onClick={() => openLeaseModal(metaData.tokenId)}
+                                >
+                                    Make offer
                                 </Button>
                             </div>
                         )

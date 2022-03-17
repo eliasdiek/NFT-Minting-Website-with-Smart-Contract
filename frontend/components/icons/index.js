@@ -5,6 +5,7 @@ import WalletConnectIcon from './WalletConnect';
 import Times from './Times';
 import PowerOff from './PowerOff';
 import Ether from './Ether';
+import Wether from './Wether';
 import Grid from './Grid';
 import Logout from './Logout';
 
@@ -16,6 +17,7 @@ export {
     Times,
     PowerOff,
     Ether,
+    Wether,
     Grid,
     Logout
 };

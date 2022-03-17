@@ -5,6 +5,7 @@ export const SET_WALLET_ID = "SET_WALLET_ID";
 export const ADD_TO_CART = "ADD_TO_CART";
 export const REMOVE_CART_ITEM = "REMOVE_CART_ITEM";
 export const CLEAR_CART = "CLEAR_CART";
+export const OPEN_SIGNIN = "OPEN_SIGNIN";
 
 const init = () => {
 	return {
@@ -55,6 +56,13 @@ const clearCart = () => {
 	}
 }
 
+const openSignin = (value) => {
+	return {
+		type: OPEN_SIGNIN,
+		value: value
+	}
+}
+
 export {
 	init,
 	setWalletAddress,
@@ -62,5 +70,6 @@ export {
 	setWalletId,
 	addToCart,
 	removeCartItem,
-	clearCart
+	clearCart,
+	openSignin
 };

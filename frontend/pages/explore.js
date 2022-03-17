@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import Web3 from 'web3';
 import axios from 'axios';
 
-const abi = require("../contracts/FathomyachtClub.json");
+const { abi } = require("../contracts/FathomyachtClub.json");
 const contractAddress = '0xF16EB26739C290e83B7311C16596F3209890e5Fd';
 const tokenBatchURI = "https://gateway.pinata.cloud/ipfs/QmRgmtg7T8nL3iP81eg3gTWd6WHUjs75M4FzGYx9cthYCg";
 
@@ -63,10 +63,6 @@ export default function Location() {
         router.push('/tokens/' + tokenId);
     }
 
-    // useEffect(() => {
-    //     if (walletAddr === "" || walletAddr === undefined || walletAddr === null) router.push('/');
-    // }, [walletAddr]);
-
     useEffect(() => {
         if (walletAddr) getTokens();
     }, [walletAddr]);
@@ -81,7 +77,7 @@ export default function Location() {
             <main className="sm:pt-20">
                 <section className="bg-background-light pt-16 sm:mt-1 pb-16">
                     <div className="container w-4/5">
-                        <h1 className="text-primary text-center font-bold font-muli text-5xl sm:text-6xl py-6">My Collection</h1>
+                        <h1 className="text-primary text-center font-bold font-muli text-5xl sm:text-6xl py-6">Explore NFT Tokens</h1>
                     </div>
                 </section>
 

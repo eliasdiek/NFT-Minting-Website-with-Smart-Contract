@@ -6,13 +6,15 @@ import {
     SET_WALLET_ID,
     ADD_TO_CART,
     REMOVE_CART_ITEM,
-    CLEAR_CART
+    CLEAR_CART,
+    OPEN_SIGNIN
 } from "../actions";
 
 const initialState = {
 	address: '',
     walletId: 0,
-    cart: []
+    cart: [],
+    openSignin: false
 };
 
 const mainReducer = (state = initialState, action) => {
@@ -105,6 +107,11 @@ const mainReducer = (state = initialState, action) => {
             return {
                 ...state,
                 cart: []
+            }
+        case OPEN_SIGNIN:
+            return {
+                ...state,
+                openSignin: action.value
             }
         default:
             return state;

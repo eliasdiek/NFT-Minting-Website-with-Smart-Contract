@@ -10,6 +10,7 @@ import "./IAggregatorV3.sol";
 contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   uint256 private MAX_TOKEN = 10000;
   uint256[] private _tokenIds = [8000, 0, 2000, 4000, 6000];
+  uint256[] private _tokens;
 
   // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
   mapping(uint256 => uint8) private _tokenToTier;
@@ -72,7 +73,13 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   }
 
   function getTokensOfHolder(address holder_address) external view returns(uint256[] memory) {
-    return _tokensOfholder[holder_address];
+    uint256[] memory tokensOfholder = _tokensOfholder[holder_address];
+    return tokensOfholder;
+  }
+
+  function getAllTokens() external view returns(uint256[] memory) {
+    uint256[] memory tokens = _tokens;
+    return tokens;
   }
 
   function removeWhiteList(address[] memory lsts) public onlyOwner {
@@ -194,6 +201,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       _mint(msg.sender, newItemId);
       _tokenToTier[newItemId] = tierNumber;
       _tokensOfholder[msg.sender].push(newItemId);
+      _tokens.push(newItemId);
     }
 
     tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
