@@ -19,6 +19,7 @@ contract Leasing is Ownable {
     IERC20 _weth = IERC20(0xc778417E063141139Fce010982780140Aa0cD5Ab);
     IFYC _nft;
     uint8 private _refundPercentFee = 98;
+    uint16 private _blocksPerDay = 5760;
 
     struct LeaseOffer {
         address from;
@@ -112,6 +113,13 @@ contract Leasing is Ownable {
 
     function getLease(uint256 _tokenId) external view returns(LeaseOffer memory) {
         LeaseOffer memory leaseItem = _lease[_tokenId];
+        if (leaseItem.price > 0 && (block.number - leaseItem.createdAt) > (leaseItem.expiresIn * _blocksPerDay)) {
+            leaseItem.from = address(0);
+            leaseItem.price = 0;
+            leaseItem.expiresIn = 0;
+            leaseItem.createdAt = 0;
+        }
+        
         return leaseItem;
     }
 
@@ -171,7 +179,7 @@ contract Leasing is Ownable {
                 bool success2 = trasferWeth(_from, royaltyReceiver, roaltyAmount);
                 require(success2, "Failed to Pay Royalty fee");
                 
-                tokenLeaseOffers[i].createdAt = block.timestamp;
+                tokenLeaseOffers[i].createdAt = block.number;
                 _lease[_tokenId] = tokenLeaseOffers[i];
                 leaseOffers[_tokenId][i] = leaseOffers[_tokenId][leaseOffers[_tokenId].length -1];
                 leaseOffers[_tokenId].pop();
@@ -210,7 +218,7 @@ contract Leasing is Ownable {
         require(_weth.balanceOf(msg.sender) >= _amount, "You don't have enough WETH.");
         require(_expiresIn >= 30, "The minimum to lease the membership is 30 days.");
         require(_offerState[_tokenId][msg.sender] != true, "You can't send mutli offer");
-        leaseOffers[_tokenId].push(LeaseOffer(msg.sender, _amount, _expiresIn, block.timestamp));
+        leaseOffers[_tokenId].push(LeaseOffer(msg.sender, _amount, _expiresIn, block.number));
         _offerState[_tokenId][msg.sender] = true;
     }
 
@@ -225,7 +233,7 @@ contract Leasing is Ownable {
         (bool success1, ) = _royaltyReceiver.call{ value: roaltyAmount }("");
         require(success1, "Failed to Pay Royalty fee");
 
-        _lease[_tokenId] = LeaseOffer(msg.sender, msg.value, _expiresIn, block.timestamp);
+        _lease[_tokenId] = LeaseOffer(msg.sender, msg.value, _expiresIn, block.number);
         leasable[_tokenId] = false;
         _leasedTokens.push(_tokenId);
 
