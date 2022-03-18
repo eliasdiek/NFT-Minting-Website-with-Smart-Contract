@@ -57,7 +57,7 @@ export default function Token() {
         }
     }
 
-    const leaseHandler = async () => {
+    const setLeaseHandler = async () => {
         try {
             setAmountInvalid('');
             if(!amount) {
@@ -72,7 +72,7 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContract.methods.setTokenLeasable(id, w3.utils.toWei(amount), duration).send({ from: walletAddr });
-            console.log('[leaseHandler]', result);
+            console.log('[setLeaseHandler]', result);
             setBtnLoading(false);
             setTokenIsLeasable(true);
             setIsModalOpen(false);
@@ -100,7 +100,6 @@ export default function Token() {
             if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
 
             const w3 = new Web3(ethereum);
-            console.log('[leaseHandler]', w3.utils.toWei(amount), duration);
             const leaseContract = new w3.eth.Contract(leaseAbi, w3.utils.toChecksumAddress(leaseContractAddress));
             const result = await leaseContract.methods.updateLeasableToken(id, w3.utils.toWei(amount), duration).send({ from: walletAddr });
             console.log('[result]', result);
@@ -114,41 +113,6 @@ export default function Token() {
         catch (err) {
             console.log('[err]', err);
             setBtnLoading(false);
-            setLoading(false);
-        }
-    }
-
-    const getLeasableToken = async () => {
-        try {
-            setLoading(true);
-            if(typeof window === 'undefined') throw Error('window is undefined');
-            const { ethereum } = window;
-            if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
-
-            const w3 = new Web3(ethereum);
-            const leaseContract = new w3.eth.Contract(leaseAbi, w3.utils.toChecksumAddress(leaseContractAddress));
-            const result = await leaseContract.methods.getLeasableToken(String(id)).call();
-            console.log('[getLeasableToken]', result);
-
-            if(result['tokenId'] > 0) {
-                setTokenIsLeasable(true);
-                setLeasableToken({
-                    tokenId: result['tokenId'],
-                    price: w3.utils.fromWei(result['price']),
-                    duration: result['duration']
-                });
-            }
-            else {
-                setTokenIsLeasable(false);
-                setLeasableToken({
-                    tokenId: 0,
-                    price: 0,
-                    duration: 0
-                });
-            }
-        }
-        catch (err) {
-            console.log('[err]', err);
             setLoading(false);
         }
     }
@@ -402,6 +366,71 @@ export default function Token() {
         }
     }
 
+    const getLeasableToken = async () => {
+        try {
+            setLoading(true);
+            if(typeof window === 'undefined') throw Error('window is undefined');
+            const { ethereum } = window;
+            if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
+
+            const w3 = new Web3(ethereum);
+            const leaseContract = new w3.eth.Contract(leaseAbi, w3.utils.toChecksumAddress(leaseContractAddress));
+            const result = await leaseContract.methods.getLeasableToken(String(id)).call();
+            console.log('[getLeasableToken]', result);
+
+            if(result['tokenId'] > 0) {
+                setTokenIsLeasable(true);
+                setLeasableToken({
+                    tokenId: result['tokenId'],
+                    price: w3.utils.fromWei(result['price']),
+                    duration: result['duration']
+                });
+            }
+            else {
+                setTokenIsLeasable(false);
+                setLeasableToken({
+                    tokenId: 0,
+                    price: 0,
+                    duration: 0
+                });
+            }
+        }
+        catch (err) {
+            console.log('[err]', err);
+            setLoading(false);
+        }
+    }
+
+    const leaseHandler = async () => {
+        if (!walletAddr) {
+            dispatch(openSignin(true));
+            return false;
+        }
+
+        try {
+            setBtnLoading(true);
+            if(typeof window === 'undefined') throw Error('window is undefined');
+            const { ethereum } = window;
+            if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
+
+            const w3 = new Web3(ethereum);
+            const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
+            const result = await leaseContract.methods.lease(id, leasableToken.duration).send({ from: walletAddr, value: w3.utils.toWei(leasableToken.price) });
+            console.log('[leaseHandler]', result);
+            
+            setTokenIsLeasable(false);
+
+            setBtnLoading(false);
+            await getLeasableToken();
+            await getLeasing();
+            setLoading(false);
+        }
+        catch (err) {
+            console.log('[err]', err);
+            setBtnLoading(false);
+        }
+    }
+
     function closeModal() {
         setIsModalOpen(false);
     }
@@ -450,6 +479,8 @@ export default function Token() {
                              approveOffer={approveOffer}
                              cancelOffer={cancelOffer}
                              lease={lease}
+                             leaseHandler={leaseHandler}
+                             btnLoading={btnLoading}
                             />
                         </section>
                     ) 
@@ -504,7 +535,7 @@ export default function Token() {
                             <Button
                              theme="secondary"
                              className={`focus:ring-4 capitalize ${btnLoading && 'cursor-not-allowed opacity-50' } ${!isOwner && wethBalance === 0 && 'cursor-not-allowed opacity-50'}`}
-                             onClick={isOwner ? (tokenIsLeasable ? updateLeasableToken : leaseHandler) : makeOfferHandler}
+                             onClick={isOwner ? (tokenIsLeasable ? updateLeasableToken : setLeaseHandler) : makeOfferHandler}
                              disabled={btnLoading || (!isOwner && wethBalance === 0)  ? true :  false}
                             >
                                 {

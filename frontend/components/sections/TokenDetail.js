@@ -22,7 +22,9 @@ export default function TokenDetail({
     offers,
     approveOffer,
     cancelOffer,
-    lease
+    lease,
+    leaseHandler,
+    btnLoading
 }) {
     return (
         <div className="container p-4 md:p-8">
@@ -85,10 +87,15 @@ export default function TokenDetail({
                                 <div className="flex items-center justify-start">
                                     <Button
                                      theme="secondary"
-                                     className={`capitalize w-auto ${isOwner ? 'opacity-50 cursor-not-allowed' : 'opacity-1'}`}
-                                     disabled={isOwner ? true : false}
+                                     className={`capitalize w-auto ${isOwner || btnLoading ? 'opacity-50 cursor-not-allowed' : 'opacity-1'}`}
+                                     disabled={isOwner || btnLoading ? true : false}
+                                     onClick={leaseHandler}
                                     >
-                                        Lease now
+                                        {
+                                            btnLoading ? 
+                                            <span className="block animate-spin bg-transparent border-3 border-b-white border-t-blue-400 rounded-full h-5 w-5"></span> : 
+                                            <span>Lease Now</span> 
+                                        }
                                     </Button>
                                 </div>
                             </div>
@@ -213,7 +220,7 @@ export default function TokenDetail({
                             <div className="container flex items-center justify-center md:justify-end py-2 md:px-16">
                                 <Button
                                     theme="tertiary"
-                                    className={`w-auto capitalize !py-2 ${lease && 'cursor-not-allowed opacity-50'}`}
+                                    className={`w-auto capitalize !py-2 ${lease?.price > 0 && 'cursor-not-allowed opacity-50'}`}
                                     onClick={() => cancelTokenLeasable()}
                                     disabled={lease?.price > 0 ? true : false}
                                 >

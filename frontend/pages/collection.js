@@ -5,8 +5,10 @@ import Collection from '../components/sections/Collection';
 import { useSelector } from 'react-redux';
 import Web3 from 'web3';
 import axios from 'axios';
+import nftAbi from '../contracts/FathomyachtClub.json';
+import leaseAbi from '../contracts/Leasing.json';
 
-const abi = require("../contracts/FathomyachtClub.json");
+const leaseContractAddress = process.env.NEXT_PUBLIC_LEASE_CONTRACT_ADDRESS;
 const nftContractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
 const tokenBatchURI = process.env.NEXT_PUBLIC_TOKEN_BATCH_URI;
 
@@ -21,18 +23,30 @@ export default function Location() {
             setLoading(true);
             const { ethereum } = window;
             var w3 = new Web3(ethereum);
-            var contract_abi = new w3.eth.Contract(abi, nftContractAddress);
-            const tokens = await contract_abi.methods.getTokensOfHolder(walletAddr).call();
+            var nftContractInstance = new w3.eth.Contract(nftAbi, nftContractAddress);
+            const tokens = await nftContractInstance.methods.getTokensOfHolder(walletAddr).call();
+            const leasableTokens = await getLeasableTokens();
             const metas = [];
             for(let i = 0; i < tokens.length; i++) {
-                console.log('[tokenBatchURI]', tokenBatchURI);
+                const metaData = await axios.get(tokenBatchURI + '/' + tokens[i]);
 
-                const metaData = await axios.get(tokenBatchURI + '/' + String(tokens[i]));
-                metas.push(metaData?.data);
+                let tokenIsLeasable = false;
+                leasableTokens.forEach(item => {
+                    if (tokens[i] == item['tokenId'] && item['price'] > 0) {
+                        tokenIsLeasable = true;
+                    }
+                })
+                
+                metas.push({
+                    leasable: tokenIsLeasable,
+                    ...metaData?.data
+                });
             }
             console.log('[metas]', metas);
             setLoading(false);
             setMyTokens(metas);
+
+            
         }
         catch(err) {
             console.log('[err]', err);
@@ -43,9 +57,20 @@ export default function Location() {
         router.push('/tokens/' + tokenId);
     }
 
-    // useEffect(() => {
-    //     if (walletAddr === "" || walletAddr === undefined || walletAddr === null) router.push('/');
-    // }, [walletAddr]);
+    const getLeasableTokens = async () => {
+        try {
+            const { ethereum } = window;
+            const w3 = new Web3(ethereum);
+            const leaseContractInstance = new w3.eth.Contract(leaseAbi, leaseContractAddress);
+            const result = await leaseContractInstance.methods.getLeasableTokens().call();
+            console.log('[getLeasableTokens]', result);
+
+            return result;
+        }
+        catch (err) {
+            console.log('[err]', err);
+        }
+    }
 
     useEffect(() => {
         if (walletAddr) getTokens();

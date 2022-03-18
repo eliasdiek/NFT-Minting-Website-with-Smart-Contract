@@ -11,8 +11,16 @@ export default function Collection({ tokens, onTokenClick }) {
                     {
                         tokens.map((token, index) => {
                             return (
-                                <div className="border border-gray-300 rounded-md flex items-center justify-center cursor-pointer" key={index} onClick={() => onTokenClick(token.tokenId)}>
-                                    <div>
+                                <div className="border border-gray-300 rounded-md flex items-center justify-center cursor-pointer overflow-hidden" key={index} onClick={() => onTokenClick(token.tokenId)}>
+                                    <div className="relative">
+                                        {
+                                            token.leasable && <div className="absolute -left-12 top-4 z-10">
+                                                <div className="bg-red-600 py-2 px-2 text-white uppercase text-center w-40 -rotate-45 text-sm shadow-md">
+                                                    Leasable
+                                                </div>
+                                            </div>
+                                        }
+
                                         <div className="image-block responsive">
                                             <Image src={token.image} width="320" height="320" className="w-full !border-solid !border-x-0 !border-t-0 !border-b !border-gray-300" layout="fixed" alt={token.membership} />
                                         </div>

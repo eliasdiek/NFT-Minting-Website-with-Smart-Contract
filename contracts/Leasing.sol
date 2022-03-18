@@ -39,6 +39,7 @@ contract Leasing is Ownable {
     mapping (uint256 => LeaseOffer[]) leaseOffers;
     mapping (uint256 => bool) leasable;
     LeasableToken[] private _leasableTokens;
+    uint256[] _leasedTokens;
     
     modifier onlyOwnerOf(uint256 _tokenId) {
         require(msg.sender == address(_nft.ownerOf(_tokenId)), "caller is not the owner of token");
@@ -112,6 +113,11 @@ contract Leasing is Ownable {
     function getLease(uint256 _tokenId) external view returns(LeaseOffer memory) {
         LeaseOffer memory leaseItem = _lease[_tokenId];
         return leaseItem;
+    }
+
+    function getLeasedTokens() external view returns(uint256[] memory) {
+        uint256[] memory leasedTokens = _leasedTokens;
+        return leasedTokens;
     }
 
     function updateLeasableToken(uint256 _tokenId, uint256 _price, uint32 _duration) external onlyOwnerOf(_tokenId) {
@@ -221,7 +227,7 @@ contract Leasing is Ownable {
 
         _lease[_tokenId] = LeaseOffer(msg.sender, msg.value, _expiresIn, block.timestamp);
         leasable[_tokenId] = false;
-        
+        _leasedTokens.push(_tokenId);
 
         for(uint256 i = 0; i < _leasableTokens.length; i++) {
             if (_leasableTokens[i].tokenId == _tokenId) {

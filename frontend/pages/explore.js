@@ -5,10 +5,12 @@ import Collection from '../components/sections/Collection';
 import { useSelector } from 'react-redux';
 import Web3 from 'web3';
 import axios from 'axios';
+import nftAbi from '../contracts/FathomyachtClub.json';
+import leaseAbi from '../contracts/Leasing.json';
 
-const { abi } = require("../contracts/FathomyachtClub.json");
-const contractAddress = '0xF16EB26739C290e83B7311C16596F3209890e5Fd';
-const tokenBatchURI = "https://gateway.pinata.cloud/ipfs/QmRgmtg7T8nL3iP81eg3gTWd6WHUjs75M4FzGYx9cthYCg";
+const leaseContractAddress = process.env.NEXT_PUBLIC_LEASE_CONTRACT_ADDRESS;
+const nftContractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
+const tokenBatchURI = process.env.NEXT_PUBLIC_TOKEN_BATCH_URI;
 
 export default function Location() {
     const [myTokens, setMyTokens] = useState([]);
@@ -21,42 +23,64 @@ export default function Location() {
             setLoading(true);
             const { ethereum } = window;
             var w3 = new Web3(ethereum);
-            var contract_abi = new w3.eth.Contract(abi, w3.utils.toChecksumAddress(contractAddress));
-            const tokens = await contract_abi.methods.getTokensOfHolder(walletAddr).call();
+            var nftContractInstance = new w3.eth.Contract(nftAbi, nftContractAddress);
+            const tokens = await nftContractInstance.methods.getTokensOfHolder(walletAddr).call();
+            const leasableTokens = await getLeasableTokens();
             const metas = [];
             for(let i = 0; i < tokens.length; i++) {
+                const metaData = await axios.get(tokenBatchURI + '/' + tokens[i]);
 
-                const metaData = await axios.get(tokenBatchURI + '/' + tokenIdToString(tokens[i]));
-                metas.push(metaData?.data);
+                let tokenIsLeasable = false;
+                leasableTokens.forEach(item => {
+                    if (tokens[i] == item['tokenId'] && item['price'] > 0) {
+                        tokenIsLeasable = true;
+                    }
+                })
+                
+                metas.push({
+                    leasable: tokenIsLeasable,
+                    ...metaData?.data
+                });
             }
             console.log('[metas]', metas);
             setLoading(false);
             setMyTokens(metas);
+
+            
         }
         catch(err) {
             console.log('[err]', err);
         }
     }
 
-    const tokenIdToString = (tokenId) => {
-        let prefix = '';
-        if (tokenId == 0) {
-          return "0";
-        }
-        else if (tokenId > 0 && tokenId < 10) {
-          prefix = '0000';
-        }
-        else if (tokenId >= 10 && tokenId < 100) {
-          prefix = '000';
-        }
-        else if (tokenId >= 100 && tokenId < 1000) {
-          prefix = '00';
-        }
-        else if (tokenId >= 1000 && tokenId < 10000) {
-          prefix = '0';
-        }
+    const getLeasableTokens = async () => {
+        try {
+            const { ethereum } = window;
+            const w3 = new Web3(ethereum);
+            const leaseContractInstance = new w3.eth.Contract(leaseAbi, leaseContractAddress);
+            const result = await leaseContractInstance.methods.getLeasableTokens().call();
+            console.log('[getLeasableTokens]', result);
 
-        return prefix + String(tokenId);
+            return result;
+        }
+        catch (err) {
+            console.log('[err]', err);
+        }
+    }
+
+    const getLeasedTokens = async () => {
+        try {
+            const { ethereum } = window;
+            const w3 = new Web3(ethereum);
+            const leaseContractInstance = new w3.eth.Contract(leaseAbi, leaseContractAddress);
+            const result = await leaseContractInstance.methods.getLeasedTokens().call();
+            console.log('[getLeasedTokens]', result);
+
+            return result;
+        }
+        catch (err) {
+            console.log('[err]', err);
+        }
     }
 
     const onTokenClick = (tokenId) => {
