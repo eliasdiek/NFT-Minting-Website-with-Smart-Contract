@@ -8,10 +8,11 @@ const tokenBatchURI = process.env.NEXT_PUBLIC_TOKEN_BATCH_URI;
 
 function truncate(string) {
     const input = String(string);
-    return input.substr(0, 6) + '...' + input.substr(input.length - 4);
+    return input.substr(0, 6) + '...' + input.substr(input?.length - 4);
 }
 
 export default function TokenDetail({
+    walletAddr,
     metaData,
     openLeaseModal,
     tokenIsLeasable,
@@ -19,7 +20,9 @@ export default function TokenDetail({
     leasableToken,
     isOwner,
     offers,
-    approveOffer
+    approveOffer,
+    cancelOffer,
+    lease
 }) {
     return (
         <div className="container p-4 md:p-8">
@@ -69,7 +72,7 @@ export default function TokenDetail({
                     </div>
 
                     { (tokenIsLeasable && leasableToken) && <div className="bg-white border border-gray-300 rounded-md my-4">
-                        <div className="px-4 py-4 border-b borer-gray-300 font-medium">Sale ends March 23, 2022 at 8:48pm EDT</div>
+                        <div className="px-4 py-4 border-b borer-gray-300 font-medium">Leasable for { leasableToken.duration } days</div>
                         <div className="px-4 py-8 bg-background-light">
                             <div className="py-2 text-sm">
                                 <div className="flex flex-col items-start justify-start">
@@ -91,6 +94,34 @@ export default function TokenDetail({
                             </div>
                         </div>
                     </div> }
+
+                    {
+                        lease?.price > 0 && <div className="bg-white border border-gray-300 rounded-md my-4">
+                            <div className="px-4 py-4 border-b borer-gray-300 font-medium">Lease status</div>
+                            <div className="px-4 py-8 bg-background-light">
+                                <div className="flex items-center justify-between py-2 text-sm">
+                                    <div>Leased by</div>
+                                    <div className="text-primary">
+                                        <a href={`https://rinkeby.etherscan.io/address/${lease.from}`} target="_blank" rel="noreferrer" title={lease.from}>
+                                            { truncate(lease.from) }
+                                        </a>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between py-2 text-sm">
+                                    <div>Leasing at</div>
+                                    <div className="">
+                                        { lease.price } ETH
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between py-2 text-sm">
+                                    <div>Expires in</div>
+                                    <div className="">
+                                        { lease.expiresIn } days
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
 
                     <div className="bg-white border border-gray-300 rounded-md my-4">
                         <div className="px-4 py-4 border-b borer-gray-300 font-medium">Detail</div>
@@ -123,7 +154,7 @@ export default function TokenDetail({
                     <div className="bg-white border border-gray-300 rounded-md my-4">
                         <div className="px-4 py-4 border-b borer-gray-300 font-medium">Offers</div>
                         {
-                            offers.length ? (
+                            offers?.length ? (
                                 <div className="px-4 py-8 bg-background-light">
                                     {
                                         offers.map((offer, index) => {
@@ -141,14 +172,27 @@ export default function TokenDetail({
                                                             { truncate(offer['from']) }
                                                         </a>
                                                     </div>
-                                                    <div className="flex items-center justify-end shrink grow text-xs">
-                                                        <button
-                                                         className="bg-white rounded-md border border-primary py-1 px-4 ml-2"
-                                                         onClick={() => approveOffer(offer['from'])}
-                                                        >
-                                                            Accept
-                                                        </button>
-                                                    </div>
+                                                    {
+                                                        
+                                                        isOwner && <div className="flex items-center justify-end shrink grow text-xs">
+                                                            <button
+                                                                className="bg-white rounded-md border border-primary py-1 px-4 ml-2"
+                                                                onClick={() => approveOffer(offer['from'])}
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                        </div>
+                                                    }
+                                                    {
+                                                            offer['from'] == walletAddr &&  <div className="flex items-center justify-end shrink grow text-xs">
+                                                                <button
+                                                                    className="bg-white rounded-md border border-primary py-1 px-4 ml-2"
+                                                                    onClick={() => cancelOffer(offer['from'])}
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            </div>
+                                                    }
                                                 </div>
                                             )
                                         })
@@ -169,15 +213,17 @@ export default function TokenDetail({
                             <div className="container flex items-center justify-center md:justify-end py-2 md:px-16">
                                 <Button
                                     theme="tertiary"
-                                    className="w-auto capitalize !py-2"
+                                    className={`w-auto capitalize !py-2 ${lease && 'cursor-not-allowed opacity-50'}`}
                                     onClick={() => cancelTokenLeasable()}
+                                    disabled={lease?.price > 0 ? true : false}
                                 >
                                     Cancel listing
                                 </Button>
                                 <Button
                                     theme="secondary"
-                                    className="w-auto capitalize !py-2 border-primary ml-4"
+                                    className={`w-auto capitalize !py-2 border-primary ml-4 ${lease?.price > 0 && 'cursor-not-allowed opacity-50'}`}
                                     onClick={() => openLeaseModal(metaData.tokenId)}
+                                    disabled={lease?.price > 0 ? true : false}
                                 >
                                     Lower price
                                 </Button>
@@ -186,8 +232,9 @@ export default function TokenDetail({
                             <div className="container flex items-center justify-center md:justify-end py-2 md:px-16">
                                 <Button
                                     theme="primary"
-                                    className="w-auto capitalize !py-2"
+                                    className={`w-auto capitalize !py-2 ${lease?.price > 0 && 'cursor-not-allowed opacity-50'}`}
                                     onClick={() => openLeaseModal(metaData.tokenId)}
+                                    disabled={lease?.price > 0 ? true : false}
                                 >
                                     Set lease
                                 </Button>
@@ -196,8 +243,9 @@ export default function TokenDetail({
                             <div className="container flex items-center justify-center md:justify-end py-2 md:px-16">
                                 <Button
                                     theme="primary"
-                                    className="w-auto capitalize !py-2"
+                                    className={`w-auto capitalize !py-2 ${lease?.price > 0 && 'cursor-not-allowed opacity-50'}`}
                                     onClick={() => openLeaseModal(metaData.tokenId)}
+                                    disabled={lease?.price > 0 ? true : false}
                                 >
                                     Make offer
                                 </Button>

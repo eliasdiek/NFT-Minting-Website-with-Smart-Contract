@@ -234,6 +234,25 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     _setDefaultRoyalty(receiver, feeNumerator);
   }
 
+  function transferFrom(
+      address from,
+      address to,
+      uint256 tokenId
+  ) public override {
+      //solhint-disable-next-line max-line-length
+      require(_isApprovedOrOwner(_msgSender(), tokenId), "FYC: transfer caller is not owner nor approved");
+
+      for(uint256 i = 0; i < _tokensOfholder[from].length; i++) {
+        if (_tokensOfholder[from][i] == tokenId) {
+          _tokensOfholder[to].push(_tokensOfholder[from][i]);
+          _tokensOfholder[from][i] = _tokensOfholder[from][_tokensOfholder[from].length - 1];
+          _tokensOfholder[from].pop();
+        }
+      }
+
+      _transfer(from, to, tokenId);
+  }
+
   function getLatestPrice() public view returns (int) {
     (
       ,

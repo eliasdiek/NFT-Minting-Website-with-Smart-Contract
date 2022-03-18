@@ -24,6 +24,7 @@ contract Leasing is Ownable {
         address from;
         uint256 price;
         uint32 expiresIn;
+        uint256 createdAt;
     }
 
     struct LeasableToken {
@@ -33,6 +34,7 @@ contract Leasing is Ownable {
     }
     
     mapping (uint256 => LeaseOffer) private _lease;
+    mapping (address => uint256[]) private _addrToLeasingTokens;
     mapping(uint256 => mapping(address => bool)) _offerState;
     mapping (uint256 => LeaseOffer[]) leaseOffers;
     mapping (uint256 => bool) leasable;
@@ -163,8 +165,12 @@ contract Leasing is Ownable {
                 bool success2 = trasferWeth(_from, royaltyReceiver, roaltyAmount);
                 require(success2, "Failed to Pay Royalty fee");
                 
+                tokenLeaseOffers[i].createdAt = block.timestamp;
                 _lease[_tokenId] = tokenLeaseOffers[i];
-                delete leaseOffers[_tokenId][i];
+                leaseOffers[_tokenId][i] = leaseOffers[_tokenId][leaseOffers[_tokenId].length -1];
+                leaseOffers[_tokenId].pop();
+
+                _addrToLeasingTokens[_from].push(_tokenId);
 
                 emit ApproveLeasing(_tokenId);
                 break;
@@ -173,14 +179,15 @@ contract Leasing is Ownable {
         _offerState[_tokenId][_from] = false;
     }
 
-    function calcenLeaseOffer(uint256 _tokenId) external onlyOwnerOf(_tokenId) {
+    function calcenLeaseOffer(uint256 _tokenId) external {
         require(_nft.ownerOf(_tokenId) != msg.sender, "You can't buy yours.");
         require(_nft.ownerOf(_tokenId) != address(0), "You can't send offer no-owner token");
         LeaseOffer[] memory tokenLeaseOffers = leaseOffers[_tokenId];
 
         for(uint256 i = 0; i < tokenLeaseOffers.length; i++) {
             if(tokenLeaseOffers[i].from == msg.sender) {
-                delete leaseOffers[_tokenId][i];
+                leaseOffers[_tokenId][i] = leaseOffers[_tokenId][leaseOffers[_tokenId].length - 1];
+                leaseOffers[_tokenId].pop();
 
                 emit ApproveLeasing(_tokenId);
                 break;
@@ -197,7 +204,7 @@ contract Leasing is Ownable {
         require(_weth.balanceOf(msg.sender) >= _amount, "You don't have enough WETH.");
         require(_expiresIn >= 30, "The minimum to lease the membership is 30 days.");
         require(_offerState[_tokenId][msg.sender] != true, "You can't send mutli offer");
-        leaseOffers[_tokenId].push(LeaseOffer(msg.sender, _amount, _expiresIn));
+        leaseOffers[_tokenId].push(LeaseOffer(msg.sender, _amount, _expiresIn, block.timestamp));
         _offerState[_tokenId][msg.sender] = true;
     }
 
@@ -212,7 +219,7 @@ contract Leasing is Ownable {
         (bool success1, ) = _royaltyReceiver.call{ value: roaltyAmount }("");
         require(success1, "Failed to Pay Royalty fee");
 
-        _lease[_tokenId] = LeaseOffer(msg.sender, msg.value, _expiresIn);
+        _lease[_tokenId] = LeaseOffer(msg.sender, msg.value, _expiresIn, block.timestamp);
         leasable[_tokenId] = false;
         
 
@@ -227,22 +234,22 @@ contract Leasing is Ownable {
 
     function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
         if (_i == 0) {
-        return "0";
+            return "0";
         }
         uint j = _i;
         uint len;
         while (j != 0) {
-        len++;
-        j /= 10;
+            len++;
+            j /= 10;
         }
         bytes memory bstr = new bytes(len);
         uint k = len;
         while (_i != 0) {
-        k = k-1;
-        uint8 temp = (48 + uint8(_i - _i / 10 * 10));
-        bytes1 b1 = bytes1(temp);
-        bstr[k] = b1;
-        _i /= 10;
+            k = k-1;
+            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
+            _i /= 10;
         }
         
         return string(bstr);

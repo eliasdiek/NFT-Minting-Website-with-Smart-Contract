@@ -31,6 +31,7 @@ export default function Token() {
     const [isOwner, setIsOwner] = useState(false);
     const [amount, setAmount] = useState(0);
     const [duration, setDuration] = useState(30);
+    const [lease, setLease] = useState();
     const walletAddr = useSelector((state) => state.address);
     const router = useRouter();
     const { id } = router.query;
@@ -39,7 +40,7 @@ export default function Token() {
     const init = async () => {
         await getMetaData();
         await getLeasableToken();
-        await getIsOwner();
+        await getLeasing();
         await getOffers();
     }
 
@@ -163,6 +164,27 @@ export default function Token() {
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContract.methods.approveLeaseOffer(id, from).send({ from: walletAddr });
             console.log('[approveOffer]', result);
+            await getOffers();
+            setLoading(false);            
+        }
+        catch (err) {
+            console.log('[err]', err);
+            setBtnLoading(false);
+            setLoading(false);
+        }
+    }
+
+    const cancelOffer = async () => {
+        try {
+            setLoading(true);
+            if(typeof window === 'undefined') throw Error('window is undefined');
+            const { ethereum } = window;
+            if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
+
+            const w3 = new Web3(ethereum);
+            const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
+            const result = await leaseContract.methods.calcenLeaseOffer(id).send({ from: walletAddr });
+            console.log('[cancelOffer]', result);
             await getOffers();
             setLoading(false);            
         }
@@ -304,7 +326,7 @@ export default function Token() {
 
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
-            const result = await leaseContract.methods.getLeaseOffers(id).call({ from: walletAddr });
+            const result = await leaseContract.methods.getLeaseOffers(id).call();
             const leaseOffers = [];
             result.forEach((leaseOffer) => {
                 leaseOffers.push({
@@ -333,18 +355,20 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const nftContractInstance = new w3.eth.Contract(nftAbi, nftContractAddress);
             const result = await nftContractInstance.methods.ownerOf(id).call();
+
+            console.log('[getIsOwner]', result)
             
             if (result === walletAddr) {
                 setIsOwner(true);
+                setLoading(false);
                 return true;
             }
             else {
                 setIsOwner(false);
                 await getWethBalance();
+                setLoading(false);
                 return false;
             };
-
-            setLoading(false);
         }
         catch (err) {
             console.log('[err]', err);
@@ -363,7 +387,11 @@ export default function Token() {
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContract.methods.getLease(id).call();
             console.log('[getLeasing]', result);
-            setLoading(false);
+            setLease({
+                from: result['from'],
+                price: w3.utils.fromWei(result['price']),
+                expiresIn: result['expiresIn']
+            });
 
             return result;
         }
@@ -389,6 +417,10 @@ export default function Token() {
         }
     }, [id]);
 
+    useEffect(() => {
+        if (walletAddr && id) getIsOwner();
+    }, [walletAddr, id]);
+
     return (
         <React.Fragment>
             <Head>
@@ -407,6 +439,7 @@ export default function Token() {
                     ) : (
                         metaData && <section>
                             <TokenDetail
+                             walletAddr={walletAddr}
                              metaData={metaData}
                              openLeaseModal={openModal}
                              tokenIsLeasable={tokenIsLeasable}
@@ -415,13 +448,12 @@ export default function Token() {
                              isOwner={isOwner}
                              offers={offers}
                              approveOffer={approveOffer}
+                             cancelOffer={cancelOffer}
+                             lease={lease}
                             />
                         </section>
                     ) 
                 }
-                <div className="flex items-center justify-center w-full py-4">
-                    <button onClick={() => getOffers()} className="p-2 border border-gray-400 bg-primary text-white">getOffers</button>
-                </div>
 
                 <Modal isOpen={isModalOpen} openModal={openModal} closeModal={closeModal} title={isOwner ? (tokenIsLeasable ? `Lower the listing price` : `List item for leasing`) : `Make an offer`}>
                     <div className="py-4">
