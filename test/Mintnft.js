@@ -4,21 +4,26 @@ contract("FathomyachtClub", (accounts) => {
     let [alice, bob, server, tiktok] = accounts;
     let contractInstance;
 
-    return false;
-
     beforeEach(async () => {
         contractInstance = await FathomyachtClub.new();
     })
 
-    it("Get TokenURI", async () => {
-        const tmp1 = await contractInstance.getTokenURI(1);
-        console.log('[getTokenURI]', tmp1);
-    })
+    // it("Get TokenURI", async () => {
+    //     const tmp1 = await contractInstance.getTokenURI(1);
+    //     console.log('[getTokenURI]', tmp1);
+    // })
 
     it("getLocalPrice", async () => {
         const tmp1 = await contractInstance.getLocalPrice();
         console.log('[getLocalPrice]', tmp1.toString());
     })
+
+    it("test", async () => {
+        const tmp1 = await contractInstance.getTierNumberByPrice();
+        console.log(`[test]`, tmp1.toString());
+    })
+
+    return false;
 
     it("mint batch", async () => {
         await contractInstance.mintBatch(1, 0, {from: alice, value: 1_9500_0000_0000_0000});

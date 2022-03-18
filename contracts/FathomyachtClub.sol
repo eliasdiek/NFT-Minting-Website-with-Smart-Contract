@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "./IAggregatorV3.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   uint256 private MAX_TOKEN = 10000;
@@ -16,7 +16,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   mapping(uint256 => uint8) private _tokenToTier;
 
   // NFT prices in USD, mapping for tier to price(0: power, 1: yacht, 2: prestige)
-  uint256[] private NFT_PRICE = [50, 100, 150, 0, 0];
+  uint256[] private NFT_PRICE = [50, 100, 150, 9999, 9999];
   uint256[] private PRESALE_TIER_MINT_LIMIT = [100, 100, 50, 0, 0];
   uint256[] private PUBLIC_SALE_TIER_MINT_LIMIT = [900, 900, 950, 0, 0];
   string private _tokenBatchURI = "https://fyc.mypinata.cloud/ipfs/QmbhXRfyS53JKMpRQBSgs4s4jpTZGLhWPVcrtkYqHvKXQE/";
@@ -193,7 +193,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     require(tierMintCounter[tierNumber] + number < tierMintLimit[tierNumber], "Overflow maximum mint limitation.");
 
     uint256 newItemId = 0;
-    // set where start the tokenIds to be incremented
 
     for (uint256 i = 0; i < number; i++) {
       _tokenIds[tierNumber]++;
@@ -207,6 +206,45 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
 
     return newItemId;
+  }
+
+  function mintTo(address to) external payable {
+    uint8 tierNumber = getTierNumberByPrice(msg.value);
+    require(tierNumber >= 0 && tierNumber <= 4, "Amount of ether sent is not enough.");
+    require(MAX_TOKEN > totalSupply() + 1, "Not enough tokens left to buy.");
+
+    uint256[] storage tierMintLimit = PRESALE_TIER_MINT_LIMIT;
+    mapping(uint8 => uint256) storage tierMintCounter = _preSaleMintCounter;
+    uint256 curBlock = block.number;
+
+    // use public sale variables if the current date is after public sale started
+    if (curBlock >= EVENT_BLOCK[1]) {
+      tierMintLimit = PUBLIC_SALE_TIER_MINT_LIMIT;
+      tierMintCounter = _publicSaleMintCounter;
+    }
+    require(tierMintCounter[tierNumber] < tierMintLimit[tierNumber], "Overflow maximum mint limitation.");
+
+    uint256 newItemId = 0;
+
+    _tokenIds[tierNumber]++;
+    newItemId = _tokenIds[tierNumber];
+    _mint(to, newItemId);
+    _tokenToTier[newItemId] = tierNumber;
+    _tokensOfholder[to].push(newItemId);
+    _tokens.push(newItemId);
+
+    tierMintCounter[tierNumber] = tierMintCounter[tierNumber];
+  }
+
+  function getTierNumberByPrice(uint256 _price) public view returns (uint8) {
+    uint8 tierNumber = 255;
+
+    for(uint8 i = 0; i < NFT_PRICE.length; i++) {
+      uint256 nftPrice = (NFT_PRICE[i] * (10 ** 26)) / uint256(getLatestPrice());
+      if (_price >= nftPrice) tierNumber = i;
+    }
+
+    return tierNumber;
   }
 
   function totalSupply() public view returns(uint256) {
@@ -254,19 +292,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   }
 
   function getLatestPrice() public view returns (int) {
-    (
-      ,
-      int price,
-      ,
-      ,
-      
-    ) = priceFeed.latestRoundData();
-    return price;
-  }
-
-  // use this for test purpose and delete when deploy on the mainnet
-  function getLocalPrice() public pure returns (int) {
-    int price = 257508605065;
+    (,int price,,,) = priceFeed.latestRoundData();
     return price;
   }
 

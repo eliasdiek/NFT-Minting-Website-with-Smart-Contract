@@ -25,7 +25,9 @@ export default function Location() {
             var w3 = new Web3(ethereum);
             var nftContractInstance = new w3.eth.Contract(nftAbi, nftContractAddress);
             const tokens = await nftContractInstance.methods.getTokensOfHolder(walletAddr).call();
+
             const leasableTokens = await getLeasableTokens();
+            const leasedTokens = []; //await getLeasedTokens();
             const metas = [];
             for(let i = 0; i < tokens.length; i++) {
                 const metaData = await axios.get(tokenBatchURI + '/' + tokens[i]);
@@ -35,10 +37,16 @@ export default function Location() {
                     if (tokens[i] == item['tokenId'] && item['price'] > 0) {
                         tokenIsLeasable = true;
                     }
-                })
+                });
+
+                let tokenIsLeased = false;
+                leasedTokens.forEach(item => {
+                    if (tokens[i] == item) tokenIsLeased = true;
+                });
                 
                 metas.push({
                     leasable: tokenIsLeasable,
+                    leased: tokenIsLeased,
                     ...metaData?.data
                 });
             }
@@ -49,7 +57,7 @@ export default function Location() {
             
         }
         catch(err) {
-            console.log('[err]', err);
+            console.log('[errr]', err);
         }
     }
 
