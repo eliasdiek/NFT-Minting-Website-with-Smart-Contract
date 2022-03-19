@@ -109,7 +109,7 @@ export default function Location() {
             <main className="sm:pt-20">
                 <section className="bg-background-light pt-16 sm:mt-1 pb-16">
                     <div className="container w-4/5">
-                        <h1 className="text-primary text-center font-bold font-muli text-5xl sm:text-6xl py-6">Explore NFT Tokens</h1>
+                        <h1 className="text-primary text-center font-bold font-muli text-5xl sm:text-6xl py-6 leading-tight">Explore NFT Tokens</h1>
                     </div>
                 </section>
 

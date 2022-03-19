@@ -45,7 +45,7 @@ export default function TokenDetail({
                     <div className="bg-white border border-gray-300 rounded-md my-4">
                         <div className="px-4 py-4 border-b borer-gray-300 font-medium">Description</div>
                         <div className="px-4 py-8 bg-background-light">
-                            <p className="text-copy-secondary text-sm py-2">Created by you</p>
+                            <p className="text-copy-secondary text-sm py-2">Created by { isOwner ? 'you' : truncate(walletAddr) }</p>
                             { metaData?.description && <div className="text-copy-secondary text-sm py-2">{metaData?.description}</div> }
                         </div>
                     </div>

@@ -8,8 +8,10 @@ import { Grid, Logout } from '../icons'
 import { useSelector, useDispatch } from 'react-redux';
 import { removeWalletAddress } from '../../store/actions';
 import { useWeb3React } from '@web3-react/core';
+import Web3 from 'web3';
 
 export default function Header({ headerMenu }) {
+    const [balance, setBalance] = useState(0);
     const [menu, setMenu] = useState(headerMenu);
     const [showMenu, setShowMenu] = useState(true);
     const [openMenu, setOpenMenu] = useState(false);
@@ -42,6 +44,27 @@ export default function Header({ headerMenu }) {
         router.push('/');
         dispatch(removeWalletAddress());
     }
+
+    function truncate(string) {
+        const input = String(string);
+        return input.substr(0, 6) + '...' + input.substr(input?.length - 4);
+    }
+
+    async function getBalance(addr) {
+        if (window == undefined) return false;
+
+        const { ethereum } = window;
+        var web3 = new Web3(ethereum);
+        const wei =  await web3.eth.getBalance(addr);
+        const balance = web3.utils.fromWei(wei);
+
+        setBalance(balance);
+    }
+
+    useEffect(() => {
+        if (walletAddr) getBalance(walletAddr);
+        else setBalance(0);
+    }, [walletAddr]);
 
     useEffect(() => {
         setOpenMenu(false);
@@ -136,6 +159,16 @@ export default function Header({ headerMenu }) {
                         >
                             <Menu.Items className="absolute right-0 w-56 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                 <div className="py-1 ">
+                                    <Menu.Item>
+                                        <div className="group flex rounded-md items-center justify-center w-full px-4 py-2 text-sm border-b border-gray-300">
+                                            <span>{ truncate(walletAddr) }</span>
+                                        </div>
+                                    </Menu.Item>
+                                    <Menu.Item>
+                                        <div className="group flex rounded-md items-center justify-center w-full px-4 py-2 text-sm border-b border-gray-300">
+                                            <span>{ balance } ETH</span>
+                                        </div>
+                                    </Menu.Item>
                                     <Menu.Item>
                                         {({ active }) => (
                                         <button

@@ -44,8 +44,8 @@ const headerMenu = [
         desktop: true
     },
     {
-        title: 'My Collections',
-        link: '/account/collections',
+        title: 'My Collection',
+        link: '/collection',
         active: false,
         desktop: false
     }
