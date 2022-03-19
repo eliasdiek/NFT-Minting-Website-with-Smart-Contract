@@ -272,7 +272,7 @@ export default function Token() {
             const result = await wethContractInstance.methods.balanceOf(walletAddr).call();
             const balance = w3.utils.fromWei(result);
             setWethBalance(balance);
-            if (balance === 0) setAmountInvalid('You don\' have enough WETH balance.');
+            if (balance == 0) setAmountInvalid('You don\' have enough WETH balance.');
             console.log('[getWethBalance]', balance);
         }
         catch (err) {
@@ -536,9 +536,9 @@ export default function Token() {
                         <div className="pt-4">
                             <Button
                              theme="secondary"
-                             className={`focus:ring-4 capitalize ${btnLoading && 'cursor-not-allowed opacity-50' } ${!isOwner && wethBalance === 0 && 'cursor-not-allowed opacity-50'}`}
+                             className={`focus:ring-4 capitalize ${btnLoading && 'cursor-not-allowed opacity-50' } ${!isOwner && wethBalance == 0 && 'cursor-not-allowed opacity-50'}`}
                              onClick={isOwner ? (tokenIsLeasable ? updateLeasableToken : setLeaseHandler) : makeOfferHandler}
-                             disabled={btnLoading || (!isOwner && wethBalance === 0)  ? true :  false}
+                             disabled={btnLoading || (!isOwner && wethBalance == 0)  ? true :  false}
                             >
                                 {
                                     btnLoading ? 

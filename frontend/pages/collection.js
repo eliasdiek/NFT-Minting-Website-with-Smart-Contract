@@ -27,6 +27,7 @@ export default function Location() {
             var nftContractInstance = new w3.eth.Contract(nftAbi, nftContractAddress);
             const tokens = await nftContractInstance.methods.getTokensOfHolder(walletAddr).call();
             const leasableTokens = await getLeasableTokens();
+            const leasedTokens = await getLeasedTokens();
             const metas = [];
             for(let i = 0; i < tokens.length; i++) {
                 const metaData = await axios.get(tokenBatchURI + '/' + tokens[i]);
@@ -36,10 +37,16 @@ export default function Location() {
                     if (tokens[i] == item['tokenId'] && item['price'] > 0) {
                         tokenIsLeasable = true;
                     }
-                })
+                });
+
+                let tokenIsLeased = false;
+                leasedTokens.forEach(item => {
+                    if (tokens[i] == item) tokenIsLeased = true;
+                });
                 
                 metas.push({
                     leasable: tokenIsLeasable,
+                    leased: tokenIsLeased,
                     ...metaData?.data
                 });
             }
@@ -65,7 +72,6 @@ export default function Location() {
             const leaseContractInstance = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContractInstance.methods.getLeasableTokens().call();
             console.log('[getLeasableTokens]', result);
-            setLeasingTokens(result);
 
             return result;
         }
@@ -74,13 +80,25 @@ export default function Location() {
         }
     }
 
-    const getLease = async () => {
+    const updateMetaForLeasingTokens = async (items) => {
+        const metas = [];
+        for(let i = 0; i < items.length; i++) {
+            const metaData = await axios.get(tokenBatchURI + '/' + items[i]);
+            
+            metas.push(metaData?.data);
+        }
+
+        setLeasingTokens(metas);
+    }
+
+    const getLeasedTokens = async () => {
         try {
             const { ethereum } = window;
             const w3 = new Web3(ethereum);
             const leaseContractInstance = new w3.eth.Contract(leaseAbi, leaseContractAddress);
-            const result = await leaseContractInstance.methods.getLeasingTokens(walletAddr).call();
-            console.log('[getLeasableTokens]', result);
+            const result = await leaseContractInstance.methods.getLeasedTokens().call();
+            updateMetaForLeasingTokens(result);
+            console.log('[getLeasedTokens]', result);
 
             return result;
         }

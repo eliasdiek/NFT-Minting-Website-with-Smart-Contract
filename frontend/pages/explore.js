@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import Collection from '../components/sections/Collection';
+import Explore from '../components/sections/Explore';
 import { useSelector } from 'react-redux';
 import Web3 from 'web3';
 import axios from 'axios';
@@ -24,10 +24,10 @@ export default function Location() {
             const { ethereum } = window;
             var w3 = new Web3(ethereum);
             var nftContractInstance = new w3.eth.Contract(nftAbi, nftContractAddress);
-            const tokens = await nftContractInstance.methods.getAllTokens().call();
+            const tokens = await nftContractInstance.methods.getTokens().call();
 
             const leasableTokens = await getLeasableTokens();
-            const leasedTokens = []; //await getLeasedTokens();
+            const leasedTokens = await getLeasedTokens();
             const metas = [];
             for(let i = 0; i < tokens.length; i++) {
                 const metaData = await axios.get(tokenBatchURI + '/' + tokens[i]);
@@ -122,7 +122,7 @@ export default function Location() {
                         </React.Fragment>
                     ) : (
                         <section>
-                            <Collection tokens={myTokens} onTokenClick={onTokenClick} />
+                            <Explore tokens={myTokens} onTokenClick={onTokenClick} />
                         </section>
                     ) 
                 }

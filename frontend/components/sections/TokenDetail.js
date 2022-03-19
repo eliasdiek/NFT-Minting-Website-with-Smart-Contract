@@ -179,27 +179,31 @@ export default function TokenDetail({
                                                             { truncate(offer['from']) }
                                                         </a>
                                                     </div>
+                                                    <div className="flex items-center justify-end shrink grow text-xs">
                                                     {
                                                         
-                                                        isOwner && <div className="flex items-center justify-end shrink grow text-xs">
+                                                        isOwner && 
                                                             <button
                                                                 className="bg-white rounded-md border border-primary py-1 px-4 ml-2"
                                                                 onClick={() => approveOffer(offer['from'])}
                                                             >
                                                                 Accept
                                                             </button>
-                                                        </div>
+                                                        
                                                     }
+                                                    </div>
+                                                    <div className="flex items-center justify-end shrink grow text-xs">
                                                     {
-                                                            offer['from'] == walletAddr &&  <div className="flex items-center justify-end shrink grow text-xs">
-                                                                <button
-                                                                    className="bg-white rounded-md border border-primary py-1 px-4 ml-2"
-                                                                    onClick={() => cancelOffer(offer['from'])}
-                                                                >
-                                                                    Cancel
-                                                                </button>
-                                                            </div>
+                                                        offer['from'] == walletAddr &&  
+                                                            <button
+                                                                className="bg-white rounded-md border border-primary py-1 px-4 ml-2"
+                                                                onClick={() => cancelOffer(offer['from'])}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                            
                                                     }
+                                                    </div>
                                                 </div>
                                             )
                                         })
