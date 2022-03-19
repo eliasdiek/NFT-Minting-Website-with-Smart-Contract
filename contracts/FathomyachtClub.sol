@@ -10,9 +10,9 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   uint256 private MAX_TOKEN = 10000;
   uint256[] private _tokenIds = [8000, 0, 2000, 4000, 6000];
-  uint256[] public tokens;
+  uint256[] private _tokens;
   // Mapping that returns tokens array of a holder
-  mapping(address => uint256[]) public tokensOfholder;
+  mapping(address => uint256[]) private _tokensOfholder;
 
   // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
   mapping(uint256 => uint8) private _tokenToTier;
@@ -144,44 +144,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     _setTokenURI(number, tokenURI);
   }
 
-  function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(uint256) {
-    require(msg.value >= getTierPrice(tierNumber) * number, "Amount of ether sent not correct.");
-
-    // refund the remainder
-    address payable tgt = payable(msg.sender);
-    (bool success1, ) = tgt.call{ value: msg.value - getTierPrice(tierNumber) * number }("");
-    require(success1, "Failed to refund");
-
-    uint256[] storage tierMintLimit = PRESALE_TIER_MINT_LIMIT;
-    mapping(uint8 => uint256) storage tierMintCounter = _preSaleMintCounter;
-    // use public sale variables if the current date is after public sale started
-    if (block.number >= EVENT_BLOCK[1]) {
-      tierMintLimit = PUBLIC_SALE_TIER_MINT_LIMIT;
-      tierMintCounter = _publicSaleMintCounter;
-    }
-    require(tierMintCounter[tierNumber] + number < tierMintLimit[tierNumber], "Overflow maximum mint limitation.");
-
-    uint256 newItemId = 0;
-
-    for (uint256 i = 0; i < number; i++) {
-      _tokenIds[tierNumber]++;
-      newItemId = _tokenIds[tierNumber];
-      _mint(msg.sender, newItemId);
-      _tokenToTier[newItemId] = tierNumber;
-      tokensOfholder[msg.sender].push(newItemId);
-      tokens.push(newItemId);
-    }
-
-    tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
-
-    return newItemId;
-  }
-
-  function mintTo(address to) external payable {
-    uint8 tierNumber = getTierNumberByPrice(msg.value);
-    require(tierNumber >= 0 && tierNumber <= 4, "Amount of ether sent is not enough.");
-    require(MAX_TOKEN > totalSupply() + 1, "Not enough tokens left to buy.");
-
+  function _coreMintBatch(address _to, uint8 tierNumber, uint256 number) internal returns (uint256) {
     uint256[] storage tierMintLimit = PRESALE_TIER_MINT_LIMIT;
     mapping(uint8 => uint256) storage tierMintCounter = _preSaleMintCounter;
     // use public sale variables if the current date is after public sale started
@@ -193,14 +156,39 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
 
     uint256 newItemId = 0;
 
-    _tokenIds[tierNumber]++;
-    newItemId = _tokenIds[tierNumber];
-    _mint(to, newItemId);
-    _tokenToTier[newItemId] = tierNumber;
-    tokensOfholder[to].push(newItemId);
-    tokens.push(newItemId);
+    for (uint256 i = 0; i < number; i++) {
+      _tokenIds[tierNumber]++;
+      newItemId = _tokenIds[tierNumber];
+      _mint(_to, newItemId);
+      _tokenToTier[newItemId] = tierNumber;
+      _tokensOfholder[_to].push(newItemId);
+      _tokens.push(newItemId);
+    }
 
-    tierMintCounter[tierNumber] = tierMintCounter[tierNumber];
+    tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
+
+    return newItemId;
+  }
+
+  function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(uint256) {
+    require(msg.value >= getTierPrice(tierNumber) * number, "Amount of ether sent not correct.");
+
+    // refund the remainder
+    address payable tgt = payable(msg.sender);
+    (bool success1, ) = tgt.call{ value: msg.value - getTierPrice(tierNumber) * number }("");
+    require(success1, "Failed to refund");
+
+    uint256 newItemId = _coreMintBatch(msg.sender, tierNumber, number);
+
+    return newItemId;
+  }
+
+  function mintTo(address to) external payable {
+    uint8 tierNumber = getTierNumberByPrice(msg.value);
+    require(tierNumber >= 0 && tierNumber <= 4, "Amount of ether sent is not enough.");
+    require(MAX_TOKEN > totalSupply() + 1, "Not enough tokens left to buy.");
+
+    _coreMintBatch(to, tierNumber, 1);
   }
 
   function getTierNumberByPrice(uint256 _price) public view returns (uint8) {
@@ -212,6 +200,14 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     }
 
     return tierNumber;
+  }
+
+  function getTokens() external view returns(uint256[] memory) {
+    return _tokens;
+  }
+
+  function getTokensOfHolder(address _address) external view returns(uint256[] memory) {
+    return _tokensOfholder[_address];
   }
 
   function totalSupply() public view returns(uint256) {
@@ -247,11 +243,11 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       //solhint-disable-next-line max-line-length
       require(_isApprovedOrOwner(_msgSender(), tokenId), "FYC: transfer caller is not owner nor approved");
 
-      for(uint256 i = 0; i < tokensOfholder[from].length; i++) {
-        if (tokensOfholder[from][i] == tokenId) {
-          tokensOfholder[to].push(tokensOfholder[from][i]);
-          tokensOfholder[from][i] = tokensOfholder[from][tokensOfholder[from].length - 1];
-          tokensOfholder[from].pop();
+      for(uint256 i = 0; i < _tokensOfholder[from].length; i++) {
+        if (_tokensOfholder[from][i] == tokenId) {
+          _tokensOfholder[to].push(_tokensOfholder[from][i]);
+          _tokensOfholder[from][i] = _tokensOfholder[from][_tokensOfholder[from].length - 1];
+          _tokensOfholder[from].pop();
         }
       }
 
