@@ -55,6 +55,14 @@ contract Leasing is Ownable {
         _nft = IFYC(nft_address);
     }
 
+    function getBlocksPerDay() external view returns(uint16) {
+        return _blocksPerDay;
+    }
+
+    function setBlocksPerDay(uint16 _blocks) external {
+        _blocksPerDay = _blocks;
+    }
+
     function withDraw() external onlyOwner {
         address payable tgt = payable(owner());
         (bool success1, ) = tgt.call{value:address(this).balance}("");
@@ -125,6 +133,15 @@ contract Leasing is Ownable {
 
     function getLeasedTokens() external view returns(uint256[] memory) {
         uint256[] memory leasedTokens = _leasedTokens;
+        for(uint256 i = 0; i < _leasedTokens.length; i++) {
+            LeaseOffer memory leaseItem = _lease[leasedTokens[i]];
+
+            if (leaseItem.price > 0 && (block.number - leaseItem.createdAt) > (leaseItem.expiresIn * _blocksPerDay)) {
+                leasedTokens[i] = leasedTokens[leasedTokens.length - 1];
+                delete leasedTokens[leasedTokens.length - 1];
+            }
+        }
+
         return leasedTokens;
     }
 
@@ -159,6 +176,21 @@ contract Leasing is Ownable {
 
     function getLeaseOffers(uint256 _tokenId) external view returns(LeaseOffer[] memory) {
         return leaseOffers[_tokenId];
+    }
+
+    function getLeasingTokens(address _address) external view returns (uint256[] memory) {
+        uint256[] memory leasingTokens = _addrToLeasingTokens[_address];
+        
+        for(uint256 i = 0; i < _addrToLeasingTokens[_address].length; i++) {
+            LeaseOffer memory leaseItem = _lease[leasingTokens[i]];
+
+            if (leaseItem.price > 0 && (block.number - leaseItem.createdAt) > (leaseItem.expiresIn * _blocksPerDay)) {
+                leasingTokens[i] = leasingTokens[leasingTokens.length - 1];
+                delete leasingTokens[leasingTokens.length - 1];
+            }
+        }
+
+        return leasingTokens;
     }
 
     function trasferWeth(address from, address to, uint256 amount) public returns(bool) {

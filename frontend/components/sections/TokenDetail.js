@@ -173,7 +173,7 @@ export default function TokenDetail({
                                                             <span className="font-bold">{ offer['price'] }</span> WETH
                                                         </div>
                                                     </div>
-                                                    <div className="text-center text-sm w-16 shrink">{ offer['expiresIn'] }</div>
+                                                    <div className="text-center text-sm w-16 shrink">{ offer['expiresIn'] } days</div>
                                                     <div className="text-center text-sm w-36 shrink grow text-primary">
                                                         <a href={`https://rinkeby.etherscan.io/address/${offer['from']}`} title={offer['from']} target="_blank" rel="noreferrer">
                                                             { truncate(offer['from']) }

@@ -24,7 +24,7 @@ export default function Location() {
             const { ethereum } = window;
             var w3 = new Web3(ethereum);
             var nftContractInstance = new w3.eth.Contract(nftAbi, nftContractAddress);
-            const tokens = await nftContractInstance.methods.getTokensOfHolder(walletAddr).call();
+            const tokens = await nftContractInstance.methods.getAllTokens().call();
 
             const leasableTokens = await getLeasableTokens();
             const leasedTokens = []; //await getLeasedTokens();

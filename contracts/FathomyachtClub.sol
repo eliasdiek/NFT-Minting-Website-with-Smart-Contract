@@ -10,7 +10,9 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   uint256 private MAX_TOKEN = 10000;
   uint256[] private _tokenIds = [8000, 0, 2000, 4000, 6000];
-  uint256[] private _tokens;
+  uint256[] public tokens;
+  // Mapping that returns tokens array of a holder
+  mapping(address => uint256[]) public tokensOfholder;
 
   // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
   mapping(uint256 => uint8) private _tokenToTier;
@@ -19,7 +21,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   uint256[] private NFT_PRICE = [50, 100, 150, 9999, 9999];
   uint256[] private PRESALE_TIER_MINT_LIMIT = [100, 100, 50, 0, 0];
   uint256[] private PUBLIC_SALE_TIER_MINT_LIMIT = [900, 900, 950, 0, 0];
-  string private _tokenBatchURI = "https://fyc.mypinata.cloud/ipfs/QmbhXRfyS53JKMpRQBSgs4s4jpTZGLhWPVcrtkYqHvKXQE/";
   // 0: presale start block, 1: public sale start block
   uint256[] private EVENT_BLOCK = [10264904, 10437473];
   // Mapping from address to minted number of NFTs(0: power, 1: yacht, 2: prestige)
@@ -28,8 +29,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   mapping(uint8 => uint256) private _publicSaleMintCounter;
   // Mapping from address to white list flag(1: added, 0: removed)
   mapping(address => uint8) private _whitelister;
-  // Mapping that returns tokens array of a holder
-  mapping(address => uint256[]) private _tokensOfholder;
 
   AggregatorV3Interface internal priceFeed;
 
@@ -50,16 +49,16 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     _;
   }
 
-  function checkBlock(address pm_address) internal view returns(uint8) {
-    uint256 curBlock = block.number;
+  modifier ableGetOrSetMintLimit(uint8 _saleNumber, uint8 _tierNumber) {
+    require(_saleNumber >= 1 && _saleNumber <= 2, "saleNumber must be larger than 0. 1: Presale, 2: Public sale");
+    require(_tierNumber >= 0 && _tierNumber <= 4, "Invalied tierNumber of array.");
+    _;
+  }
 
-    if (curBlock >= EVENT_BLOCK[1]) {
-      return 2;
-    }
-    if (curBlock >= EVENT_BLOCK[0]) {
-      if(_whitelister[pm_address]== 1) {
-        return 1;
-      }
+  function checkBlock(address pm_address) internal view returns(uint8) {
+    if (block.number >= EVENT_BLOCK[1]) return 2;
+    if (block.number >= EVENT_BLOCK[0]) {
+      if(_whitelister[pm_address]== 1) return 1;
     }
 
     return 0;
@@ -70,16 +69,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     for(uint256 i=0; i<new_len; i++) {
       _whitelister[lsts[i]] = 1;
     }
-  }
-
-  function getTokensOfHolder(address holder_address) external view returns(uint256[] memory) {
-    uint256[] memory tokensOfholder = _tokensOfholder[holder_address];
-    return tokensOfholder;
-  }
-
-  function getAllTokens() external view returns(uint256[] memory) {
-    uint256[] memory tokens = _tokens;
-    return tokens;
   }
 
   function removeWhiteList(address[] memory lsts) public onlyOwner {
@@ -117,16 +106,9 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     * @param _saleNumber 1: Presale, 2: Public Sale
     * @param _tierNumber 0: Power, 1: Yacht, 2: Prestige, 3: Ultra, 4: Reserve
     */
-  function getTierMintLimit(uint8 _saleNumber, uint8 _tierNumber) external view returns(uint256) {
-    require(_saleNumber >= 1 && _saleNumber <= 2, "saleNumber must be larger than 0. 1: Presale, 2: Public sale");
-    require(_tierNumber >= 0 && _tierNumber <= 4, "Invalied tierNumber of array.");
-
-    if (_saleNumber == 1) {
-      return PRESALE_TIER_MINT_LIMIT[_tierNumber];
-    }
-    else {
-      return PUBLIC_SALE_TIER_MINT_LIMIT[_tierNumber];
-    }
+  function getTierMintLimit(uint8 _saleNumber, uint8 _tierNumber) external view ableGetOrSetMintLimit(_saleNumber, _tierNumber) returns(uint256) {
+    if (_saleNumber == 1) return PRESALE_TIER_MINT_LIMIT[_tierNumber];
+    else return PUBLIC_SALE_TIER_MINT_LIMIT[_tierNumber];
   }
 
   /**
@@ -136,16 +118,9 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     * @param _limit target address that will receive the tokens
     * @param _tierNumber 0: Power, 1: Yacht, 2: Prestige, 3: Ultra, 4: Reserve
     */
-  function setTierMintLimit(uint8 _saleNumber, uint256 _limit, uint8 _tierNumber) external onlyOwner {
-    require(_saleNumber >= 1 && _saleNumber <= 2, "saleNumber must be larger than 0. 1: Presale, 2: Public sale");
-    require(_tierNumber >= 0 && _tierNumber <= 4, "Invalied tierNumber of array.");
-
-    if (_saleNumber == 1) {
-      PRESALE_TIER_MINT_LIMIT[_tierNumber] = _limit;
-    }
-    else {
-      PUBLIC_SALE_TIER_MINT_LIMIT[_tierNumber] = _limit;
-    }
+  function setTierMintLimit(uint8 _saleNumber, uint256 _limit, uint8 _tierNumber) external onlyOwner ableGetOrSetMintLimit(_saleNumber, _tierNumber) {
+    if (_saleNumber == 1) PRESALE_TIER_MINT_LIMIT[_tierNumber] = _limit;
+    else PUBLIC_SALE_TIER_MINT_LIMIT[_tierNumber] = _limit;
   }
 
   /**
@@ -165,28 +140,22 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     require(success1, "Failed to Withdraw Ether");
   }
 
-  function setTokenBatchURI(string memory _batchTokenURI) external onlyOwner {
-    _tokenBatchURI = _batchTokenURI;
-  }
-
   function setTokenURI(uint256 number, string memory tokenURI) public onlyOwner {
     _setTokenURI(number, tokenURI);
   }
 
   function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(uint256) {
-    require(msg.value >= ((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLatestPrice()), "Amount of ether sent not correct.");
+    require(msg.value >= getTierPrice(tierNumber) * number, "Amount of ether sent not correct.");
 
     // refund the remainder
     address payable tgt = payable(msg.sender);
-    (bool success1, ) = tgt.call{ value: msg.value - (((NFT_PRICE[tierNumber] * number) * (10 ** 26)) / uint256(getLatestPrice())) }("");
+    (bool success1, ) = tgt.call{ value: msg.value - getTierPrice(tierNumber) * number }("");
     require(success1, "Failed to refund");
 
     uint256[] storage tierMintLimit = PRESALE_TIER_MINT_LIMIT;
     mapping(uint8 => uint256) storage tierMintCounter = _preSaleMintCounter;
-    uint256 curBlock = block.number;
-
     // use public sale variables if the current date is after public sale started
-    if (curBlock >= EVENT_BLOCK[1]) {
+    if (block.number >= EVENT_BLOCK[1]) {
       tierMintLimit = PUBLIC_SALE_TIER_MINT_LIMIT;
       tierMintCounter = _publicSaleMintCounter;
     }
@@ -199,8 +168,8 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       newItemId = _tokenIds[tierNumber];
       _mint(msg.sender, newItemId);
       _tokenToTier[newItemId] = tierNumber;
-      _tokensOfholder[msg.sender].push(newItemId);
-      _tokens.push(newItemId);
+      tokensOfholder[msg.sender].push(newItemId);
+      tokens.push(newItemId);
     }
 
     tierMintCounter[tierNumber] = tierMintCounter[tierNumber] + number;
@@ -215,10 +184,8 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
 
     uint256[] storage tierMintLimit = PRESALE_TIER_MINT_LIMIT;
     mapping(uint8 => uint256) storage tierMintCounter = _preSaleMintCounter;
-    uint256 curBlock = block.number;
-
     // use public sale variables if the current date is after public sale started
-    if (curBlock >= EVENT_BLOCK[1]) {
+    if (block.number >= EVENT_BLOCK[1]) {
       tierMintLimit = PUBLIC_SALE_TIER_MINT_LIMIT;
       tierMintCounter = _publicSaleMintCounter;
     }
@@ -230,8 +197,8 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     newItemId = _tokenIds[tierNumber];
     _mint(to, newItemId);
     _tokenToTier[newItemId] = tierNumber;
-    _tokensOfholder[to].push(newItemId);
-    _tokens.push(newItemId);
+    tokensOfholder[to].push(newItemId);
+    tokens.push(newItemId);
 
     tierMintCounter[tierNumber] = tierMintCounter[tierNumber];
   }
@@ -280,11 +247,11 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
       //solhint-disable-next-line max-line-length
       require(_isApprovedOrOwner(_msgSender(), tokenId), "FYC: transfer caller is not owner nor approved");
 
-      for(uint256 i = 0; i < _tokensOfholder[from].length; i++) {
-        if (_tokensOfholder[from][i] == tokenId) {
-          _tokensOfholder[to].push(_tokensOfholder[from][i]);
-          _tokensOfholder[from][i] = _tokensOfholder[from][_tokensOfholder[from].length - 1];
-          _tokensOfholder[from].pop();
+      for(uint256 i = 0; i < tokensOfholder[from].length; i++) {
+        if (tokensOfholder[from][i] == tokenId) {
+          tokensOfholder[to].push(tokensOfholder[from][i]);
+          tokensOfholder[from][i] = tokensOfholder[from][tokensOfholder[from].length - 1];
+          tokensOfholder[from].pop();
         }
       }
 
@@ -296,8 +263,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     return price;
   }
 
-  function _baseURI() internal view override returns (string memory) {
-    string memory baseURI = _tokenBatchURI;
-    return baseURI;
+  function _baseURI() internal pure override returns (string memory) {
+    return "https://fyc.mypinata.cloud/ipfs/QmbhXRfyS53JKMpRQBSgs4s4jpTZGLhWPVcrtkYqHvKXQE/";
   }
 }

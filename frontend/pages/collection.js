@@ -14,6 +14,7 @@ const tokenBatchURI = process.env.NEXT_PUBLIC_TOKEN_BATCH_URI;
 
 export default function Location() {
     const [myTokens, setMyTokens] = useState([]);
+    const [leasingTokens, setLeasingTokens] = useState([]);
     const [loading, setLoading] = useState(false);
     const walletAddr = useSelector((state) => state.address);
     const router = useRouter();
@@ -64,6 +65,22 @@ export default function Location() {
             const leaseContractInstance = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContractInstance.methods.getLeasableTokens().call();
             console.log('[getLeasableTokens]', result);
+            setLeasingTokens(result);
+
+            return result;
+        }
+        catch (err) {
+            console.log('[err]', err);
+        }
+    }
+
+    const getLease = async () => {
+        try {
+            const { ethereum } = window;
+            const w3 = new Web3(ethereum);
+            const leaseContractInstance = new w3.eth.Contract(leaseAbi, leaseContractAddress);
+            const result = await leaseContractInstance.methods.getLeasingTokens(walletAddr).call();
+            console.log('[getLeasableTokens]', result);
 
             return result;
         }
@@ -99,7 +116,7 @@ export default function Location() {
                         </React.Fragment>
                     ) : (
                         <section>
-                            <Collection tokens={myTokens} onTokenClick={onTokenClick} />
+                            <Collection tokens={myTokens} leasingTokens={leasingTokens} onTokenClick={onTokenClick} />
                         </section>
                     ) 
                 }

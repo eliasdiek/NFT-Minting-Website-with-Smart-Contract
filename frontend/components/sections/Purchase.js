@@ -166,12 +166,8 @@ export default function Purchase() {
         <React.Fragment>
             <div className="container w-4/5">
 
-                <div className="bg-white rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 px-2 py-4 sm:py-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="image-block">
-                            <Image src={`/tokens/Power/images/08001.png`} className="block" width={600} height={600} alt="Token image" />
-                        </div>
-
+                <div className="bg-white rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 px-2 py-4 sm:py-8 md:w-4/5 mx-auto">
+                    <div className="block">
                         <div className="px-5">
                             <h5 className="font-medium font-muli text-4xl py-2 mb-4">{memberShip} Membership</h5>
 

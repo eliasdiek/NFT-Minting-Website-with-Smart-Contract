@@ -274,11 +274,29 @@
             "internalType": "uint32",
             "name": "expiresIn",
             "type": "uint32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Leasing.LeaseOffer",
         "name": "",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getLeasedTokens",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
@@ -376,6 +394,11 @@
             "internalType": "uint32",
             "name": "expiresIn",
             "type": "uint32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Leasing.LeaseOffer[]",

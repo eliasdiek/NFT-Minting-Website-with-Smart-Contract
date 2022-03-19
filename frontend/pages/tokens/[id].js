@@ -129,6 +129,7 @@ export default function Token() {
             const result = await leaseContract.methods.approveLeaseOffer(id, from).send({ from: walletAddr });
             console.log('[approveOffer]', result);
             await getOffers();
+            await getLeasing();
             setLoading(false);            
         }
         catch (err) {
@@ -311,7 +312,8 @@ export default function Token() {
 
     const getIsOwner = async () => {
         try {
-            setLoading(true);
+            const alreadyLoading = loading;
+            if (!alreadyLoading) setLoading(true);
             if(typeof window === 'undefined') throw Error('window is undefined');
             const { ethereum } = window;
             if (typeof ethereum === 'undefined') throw Error('Web3 provider is not available');
@@ -324,13 +326,13 @@ export default function Token() {
             
             if (result === walletAddr) {
                 setIsOwner(true);
-                setLoading(false);
+                if (!alreadyLoading) setLoading(false);
                 return true;
             }
             else {
                 setIsOwner(false);
                 await getWethBalance();
-                setLoading(false);
+                if (!alreadyLoading) setLoading(false);
                 return false;
             };
         }
