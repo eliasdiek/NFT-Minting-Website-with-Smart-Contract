@@ -186,7 +186,7 @@ export default function Home() {
                 <Button theme="primary" className="w-auto">Coming Soon</Button>
               </div>
               <div className="w-full sm:w-1/2 sm:pl-2">
-                <Image src="/images/hero-banner.jpg" className="w-full h-full" width={1600} height={1067} alt="Homepage banner" />
+                <Image src="/images/fathom-social-club.jpeg" className="w-full h-full" width={1600} height={1067} alt="Homepage banner" />
               </div>
             </div>
           </div>
