@@ -164,11 +164,11 @@ export default function Purchase() {
 
     return (
         <React.Fragment>
-            <div className="container w-4/5">
+            <div className="container md:w-4/5">
 
                 <div className="bg-white rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 px-2 py-4 sm:py-8 md:w-4/5 mx-auto">
                     <div className="block">
-                        <div className="px-5">
+                        <div className="md:px-8">
                             <h5 className="font-medium font-muli text-4xl py-2 mb-4">{memberShip} Membership</h5>
 
                             <div className="flex items-center justify-between">
