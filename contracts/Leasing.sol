@@ -3,6 +3,9 @@ pragma solidity >=0.8.9 <0.9.0;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
+	import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 interface IFYC is IERC721 {
     function totalSupply() external view returns(uint256 number);
@@ -13,8 +16,14 @@ interface IFYC is IERC721 {
     function getLatestPrice() external view returns (int price);
 }
 
-contract Leasing is Ownable {
+contract Leasing is Ownable, ReentrancyGuard, AccessControlEnumerable {
+    // Protect uint using safemath
+    using SafeMath for uint256;
+
+    // Log more in depth events such as withdrawals and cancelled txns
     event ApproveLeasing(uint tokenId);
+	event LogWithdrawal(address indexed withdrawer, address indexed withdrawalAccount, uint amount);
+    event LogCanceled();
     
     IERC20 _weth = IERC20(0xc778417E063141139Fce010982780140Aa0cD5Ab);
     IFYC _nft;
@@ -63,7 +72,7 @@ contract Leasing is Ownable {
         _blocksPerDay = _blocks;
     }
 
-    function withDraw() external onlyOwner {
+    function withDraw() nonReentrant external onlyOwner {
         address payable tgt = payable(owner());
         (bool success1, ) = tgt.call{value:address(this).balance}("");
         require(success1, "Failed to Withdraw VET");
@@ -97,7 +106,7 @@ contract Leasing is Ownable {
         else return false;
     }
 
-    function setTokenLeasable(uint256 _tokenId, uint256 _price, uint32 _duration) external onlyOwnerOf(_tokenId) {
+    function setTokenLeasable(uint256 _tokenId, uint256 _price, uint32 _duration) nonReentrant external onlyOwnerOf(_tokenId) {
         require(_price >= _nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10, "Amount of ether sent is not correct.");
         require(_duration >= 30, "The minimum to lease the membership is 30 days.");
 
@@ -197,7 +206,7 @@ contract Leasing is Ownable {
         return _weth.transferFrom(from, to, amount);
     }
 
-    function approveLeaseOffer(uint256 _tokenId, address _from) external onlyOwnerOf(_tokenId) {
+    function approveLeaseOffer(uint256 _tokenId, address _from) nonReentrant external onlyOwnerOf(_tokenId) {
         LeaseOffer[] memory tokenLeaseOffers = leaseOffers[_tokenId];
 
         for(uint256 i = 0; i < tokenLeaseOffers.length; i++) {
@@ -225,7 +234,7 @@ contract Leasing is Ownable {
         _offerState[_tokenId][_from] = false;
     }
 
-    function calcenLeaseOffer(uint256 _tokenId) external {
+    function calcenLeaseOffer(uint256 _tokenId) nonReentrant external {
         require(_nft.ownerOf(_tokenId) != msg.sender, "You can't buy yours.");
         require(_nft.ownerOf(_tokenId) != address(0), "You can't send offer no-owner token");
         LeaseOffer[] memory tokenLeaseOffers = leaseOffers[_tokenId];
@@ -243,7 +252,7 @@ contract Leasing is Ownable {
         _offerState[_tokenId][msg.sender] = false;
     }
 
-    function sendLeaseOffer(uint256 _tokenId, uint256 _amount, uint32 _expiresIn) public payable {
+    function sendLeaseOffer(uint256 _tokenId, uint256 _amount, uint32 _expiresIn) nonReentrant public payable {
         require(_nft.ownerOf(_tokenId) != msg.sender, "You can't buy yours.");
         require(_nft.ownerOf(_tokenId) != address(0), "You can't send offer no-owner token");
         require(_amount >= _nft.getTierPrice(_nft.getTierNumberOf(_tokenId)) / 10, "Amount of ether sent is not correct.");
@@ -254,7 +263,7 @@ contract Leasing is Ownable {
         _offerState[_tokenId][msg.sender] = true;
     }
 
-    function lease(uint256 _tokenId, uint32 _expiresIn) external payable {
+    function lease(uint256 _tokenId, uint32 _expiresIn) nonReentrant external payable {
         require(_nft.ownerOf(_tokenId) != msg.sender, "You can't buy yours.");
         require(leasable[_tokenId], "Token is not public");
         require(_nft.ownerOf(_tokenId) != address(0), "You can't send offer no-owner token");
@@ -276,28 +285,5 @@ contract Leasing is Ownable {
                 break;
             }
         }
-    }
-
-    function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
-        if (_i == 0) {
-            return "0";
-        }
-        uint j = _i;
-        uint len;
-        while (j != 0) {
-            len++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(len);
-        uint k = len;
-        while (_i != 0) {
-            k = k-1;
-            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
-            bytes1 b1 = bytes1(temp);
-            bstr[k] = b1;
-            _i /= 10;
-        }
-        
-        return string(bstr);
     }
 }

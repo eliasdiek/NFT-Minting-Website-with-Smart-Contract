@@ -6,16 +6,26 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
-  uint256 private MAX_TOKEN = 10000;
+contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable, ReentrancyGuard, AccessControlEnumerable {
+	  // Protect uint using safemath
+  using SafeMath for uint256;  
+
+  uint256 public MAX_TOKEN = 10000;
   uint256[] private _tokenIds = [8000, 0, 2000, 4000, 6000];
   uint256[] private _tokens;
   // Mapping that returns tokens array of a holder
   mapping(address => uint256[]) private _tokensOfholder;
 
+	// Log more in depth events such as withdrawals and cancelled txns
+  event LogWithdrawal(address indexed withdrawer, address indexed withdrawalAccount, uint amount);
+  event LogCanceled();
+
   // mapping for token to tier number(0: power, 1: yacht, 2: prestige)
-  mapping(uint256 => uint8) private _tokenToTier;
+  mapping(uint256 => uint8) public _tokenToTier;
 
   // NFT prices in USD, mapping for tier to price(0: power, 1: yacht, 2: prestige)
   uint256[] private NFT_PRICE = [50, 100, 150, 9999, 9999];
@@ -78,10 +88,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     }
   }
 
-  function getTierNumberOf(uint256 _tokenId) public view returns(uint8) {
-    return _tokenToTier[_tokenId];
-  }
-
   function getTierPrice(uint8 tierNumber) public view returns(uint256) {
     require(tierNumber >= 0 && tierNumber <= 4, "Invalied tierNumber of array");
     return (NFT_PRICE[tierNumber] * (10 ** 26)) / uint256(getLatestPrice());
@@ -90,10 +96,6 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
   function setTierPrice(uint256 price, uint8 tierNumber) external onlyOwner {
     require(tierNumber >= 0 && tierNumber <= 4, "Invalied tierNumber of array.");
     NFT_PRICE[tierNumber] = price;
-  }
-
-  function getMaxLimit() external view returns(uint256) {
-    return MAX_TOKEN;
   }
 
   function setMaxLimit(uint256 limit) external onlyOwner {
@@ -134,14 +136,10 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     EVENT_BLOCK[_saleNumber - 1] = _blockNumber;
   }
 
-  function withDraw() external onlyOwner {
+  function withDraw() nonReentrant external onlyOwner {
     address payable tgt = payable(owner());
     (bool success1, ) = tgt.call{value:address(this).balance}("");
     require(success1, "Failed to Withdraw Ether");
-  }
-
-  function setTokenURI(uint256 number, string memory tokenURI) public onlyOwner {
-    _setTokenURI(number, tokenURI);
   }
 
   function _coreMintBatch(address _to, uint8 tierNumber, uint256 number) internal returns (uint256) {
@@ -170,13 +168,16 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     return newItemId;
   }
 
-  function mintBatch(uint256 number, uint8 tierNumber) public payable ableMintBatch(number, tierNumber) returns(uint256) {
+  function mintBatch(uint256 number, uint8 tierNumber) public nonReentrant  payable ableMintBatch(number, tierNumber) returns(uint256) {
     require(msg.value >= getTierPrice(tierNumber) * number, "Amount of ether sent not correct.");
 
     // refund the remainder
     address payable tgt = payable(msg.sender);
     (bool success1, ) = tgt.call{ value: msg.value - getTierPrice(tierNumber) * number }("");
     require(success1, "Failed to refund");
+
+	  // reject payments of 0 ETH
+    if (msg.value == 0) revert();
 
     uint256 newItemId = _coreMintBatch(msg.sender, tierNumber, number);
 
@@ -219,7 +220,7 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable {
     return total;
   }
 
-  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981) returns (bool) {
+  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981, AccessControlEnumerable) returns (bool) {
     return super.supportsInterface(interfaceId);
   }
 
