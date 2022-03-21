@@ -88,6 +88,10 @@ contract FathomyachtClub is ERC721URIStorage, ERC2981, Ownable, ReentrancyGuard,
     }
   }
 
+  function getTierNumberOf(uint256 _tokenId) public view returns(uint8) {
+    return _tokenToTier[_tokenId];
+  }
+
   function getTierPrice(uint8 tierNumber) public view returns(uint256) {
     require(tierNumber >= 0 && tierNumber <= 4, "Invalied tierNumber of array");
     return (NFT_PRICE[tierNumber] * (10 ** 26)) / uint256(getLatestPrice());
