@@ -106,6 +106,10 @@ export default function Collection({ tokens, onTokenClick, leasingTokens }) {
                     </div>
                 </>
                 ) : (
+                <>
+                    <div className="py-4 text-center mt-4">
+                        <h4 className="text-3xl font-medium border-b border-gray-300 py-4">Tokens you lease</h4>
+                    </div>
                     <div className="p-8">
                         <h3 className="text-center text-3xl font-medium">No items found</h3>
                         <div className="flex items-center justify-center py-4 mt-4">
@@ -114,6 +118,7 @@ export default function Collection({ tokens, onTokenClick, leasingTokens }) {
                             </Link>
                         </div>
                     </div>
+                </>
                 )
             }
         </div>

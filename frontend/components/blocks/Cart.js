@@ -153,11 +153,11 @@ export default function Cart({ memberShip }) {
                             </div>
                             <div className="py-4 flex items-center justify-between">
                                 <span>Gas*</span>
-                                <span>{ 0.014 * cart.length } ETH</span>
+                                <span>{ 0.0008 * cart.length } ETH</span>
                             </div>
                             <div className="border-t border-gray-300 font-medium py-4 flex items-center justify-between">
                                 <span>Total</span>
-                                <span>{ cartTotal + 0.014 * cart.length } ETH</span>
+                                <span>{ cartTotal + 0.0008 * cart.length } ETH</span>
                             </div>
                         </div>
                     </div>
