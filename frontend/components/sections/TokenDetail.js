@@ -144,7 +144,7 @@ export default function TokenDetail({
                             <div className="flex items-center justify-between py-2 text-sm">
                                 <div>Token ID</div>
                                 <div className="text-primary">
-                                    <a href={`${tokenBatchURI}/${metaData.tokenId}`} target="_blank" rel="noreferrer">{ metaData.tokenId }</a>
+                                    <a href={`${tokenBatchURI}${parseInt(metaData.tokenId)}`} target="_blank" rel="noreferrer">{ metaData.tokenId }</a>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between py-2 text-sm">
