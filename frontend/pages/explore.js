@@ -15,7 +15,6 @@ const tokenBatchURI = process.env.NEXT_PUBLIC_TOKEN_BATCH_URI;
 export default function Location() {
     const [myTokens, setMyTokens] = useState([]);
     const [loading, setLoading] = useState(false);
-    const walletAddr = useSelector((state) => state.address);
     const router = useRouter();
 
     const getTokens = async () => {
@@ -96,8 +95,8 @@ export default function Location() {
     }
 
     useEffect(() => {
-        if (walletAddr) getTokens();
-    }, [walletAddr]);
+        getTokens();
+    }, []);
 
     return (
         <React.Fragment>
