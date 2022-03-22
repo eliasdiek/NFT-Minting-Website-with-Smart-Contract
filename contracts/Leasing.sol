@@ -224,6 +224,7 @@ contract Leasing is Ownable, ReentrancyGuard, AccessControlEnumerable {
                 _lease[_tokenId] = tokenLeaseOffers[i];
                 leaseOffers[_tokenId][i] = leaseOffers[_tokenId][leaseOffers[_tokenId].length -1];
                 leaseOffers[_tokenId].pop();
+                _leasedTokens.push(_tokenId);
 
                 _addrToLeasingTokens[_from].push(_tokenId);
 
