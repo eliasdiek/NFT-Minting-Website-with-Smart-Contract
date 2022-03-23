@@ -70,13 +70,13 @@ const footerMenu = [
 ];
 
 const CoinbaseWallet = new WalletLinkConnector({
-    url: `https://rinkeby.infura.io/v3/acb6066fc0de47f69a8740946a3ef833`,
+    url: `https://${process.env.NEXT_PUBLIC_NETWORK}.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`,
     appName: "Fathom Yacht Club",
     supportedChainIds: [1, 3, 4, 5, 42],
 });
 
 const WalletConnect = new WalletConnectConnector({
-    rpcUrl: `https://rinkeby.infura.io/v3/acb6066fc0de47f69a8740946a3ef833`,
+    rpcUrl: `https://${process.env.NEXT_PUBLIC_NETWORK}.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`,
     bridge: "https://bridge.walletconnect.org",
     qrcode: true,
 });
@@ -142,13 +142,11 @@ export default function Layout(props) {
     }, [dispatch]);  
 
     useEffect(() => {
-        console.log('[address]', address);
         setWalletAddr(address);
     }, [address]);
 
     useEffect(() => {
         if (active) {
-            console.log('[chainId]', chainId);
             dispatch(openSignin(false));
             setWalletAddr(account);
             dispatch(setWalletAddress(account));

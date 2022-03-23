@@ -24,8 +24,6 @@ const mainReducer = (state = initialState, action) => {
             const walletId = localStorage.getItem('id') ? localStorage.getItem('id') : '';
             const savedCart = localStorage.getItem('cart') ? JSON.parse((localStorage.getItem('cart'))) : [];
 
-            console.log('[walletAddress]', walletAddress);
-
             return {
                 ...state,
                 address: walletAddress,

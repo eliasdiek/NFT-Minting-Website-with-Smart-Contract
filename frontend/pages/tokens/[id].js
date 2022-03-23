@@ -29,6 +29,7 @@ export default function Token() {
     const [tokenIsLeasable, setTokenIsLeasable] = useState(false);
     const [leasableToken, setLeasableToken] = useState();
     const [isOwner, setIsOwner] = useState(false);
+    const [owner, setOwner] = useState('');
     const [amount, setAmount] = useState(0);
     const [duration, setDuration] = useState(30);
     const [lease, setLease] = useState();
@@ -49,7 +50,6 @@ export default function Token() {
             setLoading(true);
 
             const result = await axios.get(tokenBatchURI + '/' + parseInt(id));
-            console.log('[getMetaData]', result);
             setMetaData(result.data);
         }
         catch(err) {
@@ -72,7 +72,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContract.methods.setTokenLeasable(id, w3.utils.toWei(amount), duration).send({ from: walletAddr });
-            console.log('[setLeaseHandler]', result);
             setBtnLoading(false);
             setTokenIsLeasable(true);
             setIsModalOpen(false);
@@ -102,7 +101,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, w3.utils.toChecksumAddress(leaseContractAddress));
             const result = await leaseContract.methods.updateLeasableToken(id, w3.utils.toWei(amount), duration).send({ from: walletAddr });
-            console.log('[result]', result);
             setBtnLoading(false);
             setTokenIsLeasable(true);
             setIsModalOpen(false);
@@ -127,7 +125,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContract.methods.approveLeaseOffer(id, from).send({ from: walletAddr });
-            console.log('[approveOffer]', result);
             await getOffers();
             await getLeasing();
             setLoading(false);            
@@ -149,7 +146,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContract.methods.calcenLeaseOffer(id).send({ from: walletAddr });
-            console.log('[cancelOffer]', result);
             await getOffers();
             setLoading(false);            
         }
@@ -170,7 +166,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, w3.utils.toChecksumAddress(leaseContractAddress));
             const result = await leaseContract.methods.cancelTokenLeasable(id).send({ from: walletAddr });
-            console.log('[result]', result);
 
             await getLeasableToken();
             await getIsOwner();
@@ -212,7 +207,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContract.methods.sendLeaseOffer(id, w3.utils.toWei(amount), duration).send({ from: walletAddr });
-            console.log('[result]', result);
         }
         catch (err) {
             console.log('[err]', err);
@@ -231,7 +225,6 @@ export default function Token() {
             const wethContractInstance = new w3.eth.Contract(wethAbi, wethContractAddress);
             const result = await wethContractInstance.methods.allowance(walletAddr, leaseContractAddress).call();
             const allowedAmount = w3.utils.fromWei(result);
-            console.log('[allowance 2]', allowedAmount);
 
             return allowedAmount;
         }
@@ -251,7 +244,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const wethContractInstance = new w3.eth.Contract(wethAbi, wethContractAddress);
             const result = await wethContractInstance.methods.approve(leaseContractAddress, w3.utils.toWei('9999')).send({ from: walletAddr });
-            console.log('[allowContractInWeth]', result);
         }
         catch (err) {
             console.log('[err]', err);
@@ -273,7 +265,6 @@ export default function Token() {
             const balance = w3.utils.fromWei(result);
             setWethBalance(balance);
             if (balance == 0) setAmountInvalid('You don\' have enough WETH balance.');
-            console.log('[getWethBalance]', balance);
         }
         catch (err) {
             console.log('[err]', err);
@@ -300,7 +291,7 @@ export default function Token() {
                     expiresIn: leaseOffer['expiresIn']
                 });
             })
-            console.log('[getOffers]', leaseOffers);
+
             setOffers(leaseOffers);
             setLoading(false);
         }
@@ -322,8 +313,7 @@ export default function Token() {
             const nftContractInstance = new w3.eth.Contract(nftAbi, nftContractAddress);
             const result = await nftContractInstance.methods.ownerOf(id).call();
 
-            console.log('[getIsOwner]', result)
-            
+            setOwner(result);
             if (result === walletAddr) {
                 setIsOwner(true);
                 if (!alreadyLoading) setLoading(false);
@@ -352,7 +342,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContract.methods.getLease(id).call();
-            console.log('[getLeasing]', result);
             setLease({
                 from: result['from'],
                 price: w3.utils.fromWei(result['price']),
@@ -378,7 +367,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, w3.utils.toChecksumAddress(leaseContractAddress));
             const result = await leaseContract.methods.getLeasableToken(String(id)).call();
-            console.log('[getLeasableToken]', result);
 
             if(result['tokenId'] > 0) {
                 setTokenIsLeasable(true);
@@ -418,7 +406,6 @@ export default function Token() {
             const w3 = new Web3(ethereum);
             const leaseContract = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContract.methods.lease(id, leasableToken.duration).send({ from: walletAddr, value: w3.utils.toWei(leasableToken.price) });
-            console.log('[leaseHandler]', result);
             
             setTokenIsLeasable(false);
 
@@ -483,6 +470,7 @@ export default function Token() {
                              lease={lease}
                              leaseHandler={leaseHandler}
                              btnLoading={btnLoading}
+                             owner={owner}
                             />
                         </section>
                     ) 

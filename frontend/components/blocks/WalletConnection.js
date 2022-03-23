@@ -60,7 +60,6 @@ export default function WalletConnection() {
             if (!ethereum) return;
             var web3 = new Web3(ethereum);
             const wei =  await web3.eth.getBalance(addr);
-            console.log('[wei]', wei)
             const balance = web3.utils.fromWei(wei);
     
             setBalance(balance);
@@ -71,7 +70,6 @@ export default function WalletConnection() {
     }
 
     useEffect(() => {
-            console.log('[address]', address);
             setWalletAddr(address);
 
             if (address) getBalance(address);

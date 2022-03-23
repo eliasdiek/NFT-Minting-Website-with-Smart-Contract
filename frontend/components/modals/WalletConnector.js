@@ -17,7 +17,6 @@ export default function WalletConnector({ isOpen, closeModal, wallets, activate,
             }
             onSetWalletId(index);
             const data = await activate(action);
-            console.log('[onWalletSelect]', data);
         }
         catch(err) {
             console.log('[wallet connector]', err);

@@ -24,7 +24,8 @@ export default function TokenDetail({
     cancelOffer,
     lease,
     leaseHandler,
-    btnLoading
+    btnLoading,
+    owner
 }) {
     return (
         <div className="container p-4 md:p-8">
@@ -45,7 +46,7 @@ export default function TokenDetail({
                     <div className="bg-white border border-gray-300 rounded-md my-4">
                         <div className="px-4 py-4 border-b borer-gray-300 font-medium">Description</div>
                         <div className="px-4 py-8 bg-background-light">
-                            <p className="text-copy-secondary text-sm py-2">Created by { isOwner ? 'you' : truncate(walletAddr) }</p>
+                            <p className="text-copy-secondary text-sm py-2">Created and owned by { isOwner ? <a className="text-primary" href={`${process.env.NEXT_PUBLIC_SCAN_URI}/address/${walletAddr}`} target="_blank">you</a> : <a className="text-primary" href={`${process.env.NEXT_PUBLIC_SCAN_URI}/address/${owner}`} target="_blank">{ truncate(owner) }</a> }</p>
                             { metaData?.description && <div className="text-copy-secondary text-sm py-2">{metaData?.description}</div> }
                         </div>
                     </div>
@@ -109,7 +110,7 @@ export default function TokenDetail({
                                 <div className="flex items-center justify-between py-2 text-sm">
                                     <div>Leased by</div>
                                     <div className="text-primary">
-                                        <a href={`https://rinkeby.etherscan.io/address/${lease.from}`} target="_blank" rel="noreferrer" title={lease.from}>
+                                        <a href={`${process.env.NEXT_PUBLIC_SCAN_URI}/address/${lease.from}`} target="_blank" rel="noreferrer" title={lease.from}>
                                             { truncate(lease.from) }
                                         </a>
                                     </div>
@@ -136,7 +137,7 @@ export default function TokenDetail({
                             <div className="flex items-center justify-between py-2 text-sm">
                                 <div>Contract Address</div>
                                 <div className="text-primary">
-                                    <a href={`https://rinkeby.etherscan.io/address/${nftContractAddress}`} target="_blank" rel="noreferrer" title={nftContractAddress}>
+                                    <a href={`${process.env.NEXT_PUBLIC_SCAN_URI}/address/${nftContractAddress}`} target="_blank" rel="noreferrer" title={nftContractAddress}>
                                         { truncate(nftContractAddress) }
                                     </a>
                                 </div>
@@ -153,7 +154,7 @@ export default function TokenDetail({
                             </div>
                             <div className="flex items-center justify-between py-2 text-sm">
                                 <div>Blockchain</div>
-                                <div className="">Rinkeby</div>
+                                <div className="capitalize">{ process.env.NEXT_PUBLIC_NETWORK }</div>
                             </div>
                         </div>
                     </div>
@@ -175,7 +176,7 @@ export default function TokenDetail({
                                                     </div>
                                                     <div className="text-center text-sm w-16 shrink">{ offer['expiresIn'] } days</div>
                                                     <div className="text-center text-sm w-36 shrink grow text-primary">
-                                                        <a href={`https://rinkeby.etherscan.io/address/${offer['from']}`} title={offer['from']} target="_blank" rel="noreferrer">
+                                                        <a href={`${process.env.NEXT_PUBLIC_SCAN_URI}/address/${offer['from']}`} title={offer['from']} target="_blank" rel="noreferrer">
                                                             { truncate(offer['from']) }
                                                         </a>
                                                     </div>

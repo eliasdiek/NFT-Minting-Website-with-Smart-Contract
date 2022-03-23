@@ -11,7 +11,6 @@ export default function MemberShip({ memberShips }) {
     const walletAddr = useSelector((state) => state.address);
 
     useEffect(() => {
-        console.log('[wb]', walletAddr);
         if (walletAddr) getBalance(walletAddr);
     }, [walletAddr]);
 
