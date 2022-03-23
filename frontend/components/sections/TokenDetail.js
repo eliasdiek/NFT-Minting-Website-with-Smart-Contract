@@ -46,7 +46,7 @@ export default function TokenDetail({
                     <div className="bg-white border border-gray-300 rounded-md my-4">
                         <div className="px-4 py-4 border-b borer-gray-300 font-medium">Description</div>
                         <div className="px-4 py-8 bg-background-light">
-                            <p className="text-copy-secondary text-sm py-2">Created and owned by { isOwner ? <a className="text-primary" href={`${process.env.NEXT_PUBLIC_SCAN_URI}/address/${walletAddr}`} target="_blank">you</a> : <a className="text-primary" href={`${process.env.NEXT_PUBLIC_SCAN_URI}/address/${owner}`} target="_blank">{ truncate(owner) }</a> }</p>
+                            <p className="text-copy-secondary text-sm py-2">Created and owned by { isOwner ? <a className="text-primary" href={`${process.env.NEXT_PUBLIC_SCAN_URI}/address/${walletAddr}`} target="_blank" rel="noreferrer">you</a> : <a className="text-primary" href={`${process.env.NEXT_PUBLIC_SCAN_URI}/address/${owner}`} target="_blank" rel="noreferrer">{ truncate(owner) }</a> }</p>
                             { metaData?.description && <div className="text-copy-secondary text-sm py-2">{metaData?.description}</div> }
                         </div>
                     </div>
