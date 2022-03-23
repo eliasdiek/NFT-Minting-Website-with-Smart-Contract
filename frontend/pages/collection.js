@@ -50,11 +50,9 @@ export default function Location() {
                     ...metaData?.data
                 });
             }
-            console.log('[metas]', metas);
+
             setLoading(false);
             setMyTokens(metas);
-
-            
         }
         catch(err) {
             console.log('[err]', err);
@@ -71,7 +69,6 @@ export default function Location() {
             const w3 = new Web3(ethereum);
             const leaseContractInstance = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContractInstance.methods.getLeasableTokens().call();
-            console.log('[getLeasableTokens]', result);
 
             return result;
         }
@@ -98,7 +95,6 @@ export default function Location() {
             const leaseContractInstance = new w3.eth.Contract(leaseAbi, leaseContractAddress);
             const result = await leaseContractInstance.methods.getLeasedTokens().call();
             updateMetaForLeasingTokens(result);
-            console.log('[getLeasedTokens]', result);
 
             return result;
         }
